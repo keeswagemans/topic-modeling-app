@@ -1,6 +1,7 @@
 import re
 import pandas as pd
 from nltk.corpus import stopwords
+from itertools import chain 
 import nltk
 import spacy 
 import json 
@@ -26,7 +27,7 @@ class Preprocess:
                 word = re.sub(punctuation_pattern, '', word)
                 word = re.sub(r'\s-\s', ' ', word)
                 word = word.strip()
-                word = word.replace('\\n', '').replace('\n', '')
+                word = word.replace('\n\n', '').replace('\n', '')
                 word = re.sub(r'[^a-zA-Z\s]', '', word)
                 word = word.lower()
 
@@ -122,6 +123,10 @@ class Preprocess:
                 lemmatized_sentences.append([token.lemma_ for token in doc])
             lemmatized_texts[key] = lemmatized_sentences
 
+        for key, value in lemmatized_texts.items(): 
+            new_value = list(chain(*value))
+            lemmatized_texts[key] = new_value 
+            
         return lemmatized_texts
 
 
@@ -132,4 +137,6 @@ data_stopwords_dutch = Preprocess.remove_stopwords(data_preprocessed, 'dutch')
 data_stopwords_english = Preprocess.remove_stopwords(data_stopwords_dutch, 'english')
 data_filterwords = Preprocess.remove_filterwords(data_stopwords_english)
 data_lemma = Preprocess.lemmatization(data_filterwords)
+print(data_lemma)
 json.dump(data_lemma, open("C:/Users/KWAGEMAN/Documents/LDA_App/topicmodelingapp/preprocessing/preprocessing.json", "w"))
+
