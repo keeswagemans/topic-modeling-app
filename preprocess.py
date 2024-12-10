@@ -71,7 +71,7 @@ class Preprocess:
         )
         filterwords = df_tsv[
             df_tsv['NOU-C(number=sg)'].str.contains(
-                "ADV|PD|COLL|AA|ADP|RES|INT|NOU-P|NUM|VRB|CONJ", 
+                "ADV|PD|COLL|AA|ADP|RES|INT|VRB|CONJ", 
                 case=False, na=False
             )
         ]['1 aprilmopje'].tolist()
@@ -126,7 +126,7 @@ class Preprocess:
         for key, value in lemmatized_texts.items(): 
             new_value = list(chain(*value))
             lemmatized_texts[key] = new_value 
-            
+
         return lemmatized_texts
 
 
@@ -139,4 +139,3 @@ data_filterwords = Preprocess.remove_filterwords(data_stopwords_english)
 data_lemma = Preprocess.lemmatization(data_filterwords)
 print(data_lemma)
 json.dump(data_lemma, open("C:/Users/KWAGEMAN/Documents/LDA_App/topicmodelingapp/preprocessing/preprocessing.json", "w"))
-

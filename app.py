@@ -1,6 +1,8 @@
 import streamlit as st
 import subprocess 
 import os 
+from pathlib import Path 
+import tempfile 
 
 LOCAL_REPO_PATH = os.path.join(os.getcwd(), "documenten")
 
@@ -43,6 +45,47 @@ with tab2:
     with col2: 
         if st.button("Get results"):
             st.write("Training the Latent Dirichlet Allocation model for you and returning the results in a visualization.")
+            
+            # Run the LDA script
+            result = subprocess.run(
+                ["python", "C:/Users/KWAGEMAN/Documents/LDA_App/topicmodelingapp/topic-modeling-app/latentdirichletallocation/lda.py"],
+                shell=True,
+                capture_output=True,
+                text=True
+            )
+
+            if result.returncode == 0:
+                st.success("LDA model is voltooid!")
+                
+                # Save the output to an HTML file for visualization
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp_file:
+                    tmp_file.write(result.stdout.encode("utf-8"))
+                    temp_file_path = Path(tmp_file.name)
+                
+                # Create a downloadable link
+                with open(temp_file_path, "rb") as file:
+                    btn = st.download_button(
+                        label="Klik om de resultaten te bekijken",
+                        data=file,
+                        file_name="lda_visualization.html",
+                        mime="text/html"
+                    )
+            else:
+                st.error("Er is een fout opgetreden!")
+                
+                # Save the error details to a text file
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as tmp_file:
+                    tmp_file.write(result.stderr.encode("utf-8"))
+                    temp_file_path = Path(tmp_file.name)
+                
+                # Create a downloadable link for the error log
+                with open(temp_file_path, "rb") as file:
+                    btn = st.download_button(
+                        label="Klik hier om de foutdetails te bekijken",
+                        data=file,
+                        file_name="error_details.txt",
+                        mime="text/plain"
+                    )
 
         if st.select_slider(label='Number of topics within document', options=[x for x in range(1,21)], value=[1,20]): 
             st.write('Thanks!')
@@ -107,18 +150,24 @@ with tab4:
                 st.write("No documents found in the repository yet.")
 
         with col2:
-            uploaded_file = st.file_uploader("Choose a PDF or DOCX file to upload.", type=["pdf", "docx"])
+            uploaded_files = st.file_uploader("Choose a PDF or DOCX file to upload.", type=["pdf", "docx"], accept_multiple_files=True)
 
-            if uploaded_file:
-                if st.button("Upload to Repository"):
+            if uploaded_files:
+                if st.button("Documenten uploaden en teksten extraheren"): 
+                    for uploaded_file in uploaded_files: 
+                        try:
+                            save_path = os.path.join("C:/Users/KWAGEMAN/Documents/LDA_App/topicmodelingapp/documenten/", uploaded_file.name)
+                            with open(save_path, "wb") as f: 
+                                f.write(uploaded_file.getvalue())
+                            st.success(f"Document {uploaded_file.name} succesvol geupload.")
+                            st.info(f"Bestand opgeslagen in {save_path}")
+                        except Exception as e:
+                            st.error(f"Er is een fout opgetreden met {uploaded_file.name}: {e}.")
+                
                     try:
-                        save_path = os.path.join(LOCAL_REPO_PATH, uploaded_file.name)
-
-                        with open(save_path, "wb") as f:
-                            f.write(uploaded_file.getvalue())
-
-                        st.success(f"File {uploaded_file.name} uploaded successfully!")
-                        st.info(f"File saved at: {save_path}")
+                        result = subprocess.run(["python", "extracttext.py"], capture_output=True, text=True)
+                        st.success("Documenten succesvol geupload en teksten succesvol geëxtraheerd uit bestanden.")
+                        st.code(result.stdout)
                     except Exception as e:
-                        st.error(f"An error occurred: {e}")
-
+                        st.error(f"Fout bij extraheren teksten: {e}.")
+            
