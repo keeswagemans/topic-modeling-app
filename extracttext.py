@@ -15,13 +15,6 @@ class ExtractText:
         _, ext = os.path.splitext(path)
 
         if ext == ".pdf":
-            # try:
-            #     with open(path, 'rb') as file:
-            #         reader = PdfReader(file)
-            #         for page in reader.pages:
-            #             text += page.extract_text()
-            # except Exception as e:
-            #     print(f"Error reading PDF {path}: {e}")
             try:
                 doc = pymupdf.open(path)
                 for page in doc: 

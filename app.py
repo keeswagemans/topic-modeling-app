@@ -1,6 +1,7 @@
 import streamlit as st
 import subprocess 
 import os 
+import re 
 from pathlib import Path 
 import tempfile 
 
@@ -30,7 +31,7 @@ with tab2:
 
     with col1: 
         if st.button("Preprocessing"): 
-            st.write("Working on it!")
+            st.write("Er wordt aan gewerkt!")
             result = subprocess.run(["python", "preprocess.py"], shell=True, capture_output=True, text=True)
             
             if result.returncode == 0: 
@@ -39,12 +40,12 @@ with tab2:
                 st.error("Er is een fout opgetreden!")
                 st.code(result.stderr)
 
-        if st.select_slider(label='Number of topics', options=[x for x in range(1,21)], value=[1,20]): 
-            st.write("Thanks!")
+        if st.select_slider(label='Hoeveelheid topics', options=[x for x in range(1,21)], value=[1,20]): 
+            st.write("Bedankt!")
 
     with col2: 
-        if st.button("Get results"):
-            st.write("Training the Latent Dirichlet Allocation model for you and returning the results in a visualization.")
+        if st.button("Verkrijg resultaten"):
+            st.write("Het Latent Dirichlet Model is aan het trainen. De resultaten verschijnen in een klikbare link.")
             
             # Run the LDA script
             result = subprocess.run(
@@ -58,8 +59,10 @@ with tab2:
                 st.success("LDA model is voltooid!")
                 
                 # Save the output to an HTML file for visualization
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".html") as tmp_file:
-                    tmp_file.write(result.stdout.encode("utf-8"))
+                split_output = result.stdout.split("|")
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as tmp_file:
+                    processed_content = "<br>".join(split_output)
+                    tmp_file.write(processed_content.encode("utf-8"))
                     temp_file_path = Path(tmp_file.name)
                 
                 # Create a downloadable link
@@ -87,8 +90,8 @@ with tab2:
                         mime="text/plain"
                     )
 
-        if st.select_slider(label='Number of topics within document', options=[x for x in range(1,21)], value=[1,20]): 
-            st.write('Thanks!')
+        if st.select_slider(label='Hoeveelheid topics in de documenten', options=[x for x in range(1,21)], value=[1,20]): 
+            st.write('Bedankt!')
 
 
 with tab3: 
@@ -108,13 +111,13 @@ with tab3:
         if st.button("Preprocessing!"): 
             st.write("Working on it!")
         if st.select_slider(label='Number of topics!', options=[x for x in range(1,21)], value=[1,20]): 
-            st.write("Thanks!")
+            st.write("Bedankt!")
 
     with col2: 
-        if st.button("Get results!"):
-            st.write("Training the Latent Dirichlet Allocation model for you and returning the results in a visualization.")
-        if st.select_slider(label='Number of topics within document!', options=[x for x in range(1,21)], value=[1,20]): 
-            st.write('Thanks!') 
+        if st.button("Verkrijg resultaten!"):
+            st.write("Het Latent Dirichlet Model is aan het trainen. De resultaten verschijnen in een klikbare link zodra de machine klaar is.")
+        if st.select_slider(label='Het aantal topics in de documenten!', options=[x for x in range(1,21)], value=[1,20]): 
+            st.write('Bedankt!') 
 
 with tab4: 
     col1, col2, col3 = st.columns(3)
@@ -133,24 +136,24 @@ with tab4:
     
     os.makedirs(LOCAL_REPO_PATH, exist_ok=True)  # Ensure the directory exists
 
-    st.title("Document Repository Manager")
+    st.title("Documenten Manager")
 
     # Create a two-column layout
     col1, col2 = st.columns(2)
 
     # Button to get list of documents in the repository
     with col1:
-        if st.button("Get list of documents in repository!"):
+        if st.button("Verkrijg lijst van de documenten in de map!"):
             # List the files in the local repository
             documents = os.listdir(LOCAL_REPO_PATH)
             if documents:
-                st.write("Documents available in the repository:")
+                st.write("Documenten die beschikbaar zijn in de map:")
                 st.write(", ".join(documents))
             else:
-                st.write("No documents found in the repository yet.")
+                st.write("Nog geen documenten in de map gevonden.")
 
         with col2:
-            uploaded_files = st.file_uploader("Choose a PDF or DOCX file to upload.", type=["pdf", "docx"], accept_multiple_files=True)
+            uploaded_files = st.file_uploader("Kies een PDF of DOCX bestand.", type=["pdf", "docx"], accept_multiple_files=True)
 
             if uploaded_files:
                 if st.button("Documenten uploaden en teksten extraheren"): 
