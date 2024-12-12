@@ -148,14 +148,15 @@ with tab4:
             documents = os.listdir(LOCAL_REPO_PATH)
             if documents:
                 st.write("Documenten die beschikbaar zijn in de map:")
-                st.markdown(documents)
-                st.markdown('''
-                            <style>
-                            [data-testid="stMarkdownContainer"] ul{
-                            list-style-position: inside;
-                            }
-                            </style>
-                            ''', unsafe_allow_html=True)
+                for document in documents:
+                    st.markdown('''
+                                <style>
+                                 - [data-testid="stMarkdownContainer"] ul{
+                                padding-left:40px;v
+                                }
+                                </style>
+                                ''', unsafe_allow_html=True) 
+                    st.markdown(document)   
             else:
                 st.write("Nog geen documenten in de map gevonden.")
 
