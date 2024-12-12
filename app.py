@@ -16,7 +16,7 @@ with tab1:
     for i, paragraph in enumerate(paragraphs, 1):
         st.write(paragraph)
         
-with tab2: 
+with tab2:  
     col1, col2 = st.columns(2)
  
     st.markdown("""
@@ -109,8 +109,8 @@ with tab3:
 
     with col1: 
         if st.button("Preprocessing!"): 
-            st.write("Working on it!")
-        if st.select_slider(label='Number of topics!', options=[x for x in range(1,21)], value=[1,20]): 
+            st.write("Er wordt achter de schermen keihard gewerkt!")
+        if st.select_slider(label='Het aantal topics!', options=[x for x in range(1,21)], value=[1,20]): 
             st.write("Bedankt!")
 
     with col2: 
@@ -148,7 +148,14 @@ with tab4:
             documents = os.listdir(LOCAL_REPO_PATH)
             if documents:
                 st.write("Documenten die beschikbaar zijn in de map:")
-                st.write(", ".join(documents))
+                st.markdown(documents)
+                st.markdown('''
+                            <style>
+                            [data-testid="stMarkdownContainer"] ul{
+                            list-style-position: inside;
+                            }
+                            </style>
+                            ''', unsafe_allow_html=True)
             else:
                 st.write("Nog geen documenten in de map gevonden.")
 
@@ -159,7 +166,7 @@ with tab4:
                 if st.button("Documenten uploaden en teksten extraheren"): 
                     for uploaded_file in uploaded_files: 
                         try:
-                            save_path = os.path.join("C:/Users/KWAGEMAN/Documents/LDA_App/topicmodelingapp/documenten/", uploaded_file.name)
+                            save_path = os.path.join("C:/Users/KWAGEMAN/Documents/LDA-App/topic-modeling-app/documenten/", uploaded_file.name)
                             with open(save_path, "wb") as f: 
                                 f.write(uploaded_file.getvalue())
                             st.success(f"Document {uploaded_file.name} succesvol geupload.")
