@@ -40,8 +40,8 @@ with tab2:
                 st.error("Er is een fout opgetreden!")
                 st.code(result.stderr)
 
-        if st.select_slider(label='Hoeveelheid topics', options=[x for x in range(1,21)], value=[1,20]): 
-            st.write("Bedankt!")
+        number_topics = st.slider(label='Hoeveelheid topics', min_value=1, max_value=20, value=20, key=1) 
+        st.write(number_topics)
 
     with col2: 
         if st.button("Verkrijg resultaten"):
@@ -89,10 +89,9 @@ with tab2:
                         file_name="error_details.txt",
                         mime="text/plain"
                     )
-
-        if st.select_slider(label='Hoeveelheid topics in de documenten', options=[x for x in range(1,21)], value=[1,20]): 
-            st.write('Bedankt!')
-
+                    
+        inner_topics = st.slider(label='Hoeveelheid topics', min_value=1, max_value=20, value=20, key=2) 
+        st.write(inner_topics)
 
 with tab3: 
     col1, col2 = st.columns(2)
@@ -110,14 +109,14 @@ with tab3:
     with col1: 
         if st.button("Preprocessing!"): 
             st.write("Er wordt achter de schermen keihard gewerkt!")
-        if st.select_slider(label='Het aantal topics!', options=[x for x in range(1,21)], value=[1,20]): 
-            st.write("Bedankt!")
+        number_topics_bert = st.slider(label='Het aantal topics!', min_value=1, max_value=20, value=20, key=3)  
+        st.write(number_topics_bert)
 
     with col2: 
         if st.button("Verkrijg resultaten!"):
             st.write("Het Latent Dirichlet Model is aan het trainen. De resultaten verschijnen in een klikbare link zodra de machine klaar is.")
-        if st.select_slider(label='Het aantal topics in de documenten!', options=[x for x in range(1,21)], value=[1,20]): 
-            st.write('Bedankt!') 
+        inner_topics_bert = st.slider(label='Het aantal topics in de documenten!', min_value=1, max_value=20, value=20, key=4)
+        st.write(inner_topics_bert) 
 
 with tab4: 
     col1, col2, col3 = st.columns(3)
