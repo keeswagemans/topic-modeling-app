@@ -49,7 +49,7 @@ with tab2:
             
             # Run the LDA script
             result = subprocess.run(
-                ["python", "C:/Users/KWAGEMAN/Documents/LDA_App/topicmodelingapp/topic-modeling-app/latent-dirichlet-allocation/lda.py"],
+                ["python", "C:/Users/KWAGEMAN/Documents/LDA-App/topicmodelingapp/topic-modeling-app/latent-dirichlet-allocation/lda.py"],
                 shell=True,
                 capture_output=True,
                 text=True
