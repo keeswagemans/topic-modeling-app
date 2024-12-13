@@ -66,7 +66,7 @@ class Preprocess:
         dictionary = {}
 
         df_tsv = pd.read_csv(
-            'C:/Users/KWAGEMAN/Documents/LDA-App/topic-modeling-app/molex/molex_22_02_2022.tsv',
+            'topic-modeling-app/molex/molex_22_02_2022.tsv',
             delimiter='\t', engine='python'
         )
         filterwords = df_tsv[
@@ -131,11 +131,11 @@ class Preprocess:
 
 
 # Running the code 
-input_data = json.load(open("C:/Users/KWAGEMAN/Documents/LDA-App/topic-modeling-app/extractedtext/extractedtext.json"))
+input_data = json.load(open("extractedtext/extractedtext.json"))
 data_preprocessed = Preprocess.preprocessing(input_data)
 data_stopwords_dutch = Preprocess.remove_stopwords(data_preprocessed, 'dutch')
 data_stopwords_english = Preprocess.remove_stopwords(data_stopwords_dutch, 'english')
 data_filterwords = Preprocess.remove_filterwords(data_stopwords_english)
 data_lemma = Preprocess.lemmatization(data_filterwords)
 print(data_lemma)
-json.dump(data_lemma, open("C:/Users/KWAGEMAN/Documents/LDA-App/topicmodelingapp/preprocessing/preprocessing.json", "w"))
+json.dump(data_lemma, open("preprocessing/preprocessing.json", "w"))

@@ -49,7 +49,7 @@ with tab2:
             
             # Run the LDA script
             result = subprocess.run(
-                ["python", "C:/Users/KWAGEMAN/Documents/LDA-App/topicmodelingapp/topic-modeling-app/latent-dirichlet-allocation/lda.py"],
+                ["python", "topic-modeling-app/latent-dirichlet-allocation/lda.py"],
                 shell=True,
                 capture_output=True,
                 text=True
@@ -93,7 +93,7 @@ with tab2:
         inner_topics = st.slider(label='Hoeveelheid topics', min_value=1, max_value=20, value=20, key=2) 
         st.write(inner_topics)
 
-with tab3: 
+with tab3:
     col1, col2 = st.columns(2)
 
     st.markdown("""
@@ -166,7 +166,7 @@ with tab4:
                 if st.button("Documenten uploaden en teksten extraheren"): 
                     for uploaded_file in uploaded_files: 
                         try:
-                            save_path = os.path.join("C:/Users/KWAGEMAN/Documents/LDA-App/topic-modeling-app/documenten/", uploaded_file.name)
+                            save_path = os.path.join("topic-modeling-app/documenten/", uploaded_file.name)
                             with open(save_path, "wb") as f: 
                                 f.write(uploaded_file.getvalue())
                             st.success(f"Document {uploaded_file.name} succesvol geupload.")
