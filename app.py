@@ -32,7 +32,7 @@ with tab2:
     with col1: 
         if st.button("Preprocessing"): 
             st.write("Er wordt aan gewerkt!")
-            result = subprocess.run(["python", "preprocess.py"], shell=True, capture_output=True, text=True)
+            result = subprocess.run(["python", "topic-modeling-app/preprocess.py"], shell=True, capture_output=True, text=True)
             
             if result.returncode == 0: 
                 st.success("Preprocessing voltooid!")
@@ -175,9 +175,9 @@ with tab4:
                             st.error(f"Er is een fout opgetreden met {uploaded_file.name}: {e}.")
                 
                     try:
-                        result = subprocess.run(["python", "extracttext.py"], capture_output=True, text=True)
+                        result = subprocess.run(["python", "topic-modeling-app/extracttext.py"], capture_output=True, text=True)
                         st.success("Documenten succesvol geupload en teksten succesvol geëxtraheerd uit bestanden.")
                         st.code(result.stdout)
                     except Exception as e:
-                        st.error(f"Fout bij extraheren teksten: {e}.")
+                        st.error(f"Fout bij extraheren teksten: {e}.") 
             

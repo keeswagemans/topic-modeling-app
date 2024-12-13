@@ -22,7 +22,6 @@ class ExtractText:
             except Exception as e: 
                 print(f"Error reading PDF")
 
-
         elif ext == ".docx":
             try:
                 doc = Document(path)
@@ -54,5 +53,5 @@ class ExtractText:
         return all_text 
 
 # Run the code 
-output_data = ExtractText.extract_from_directory("C:/Users/KWAGEMAN/Documents/LDA_App/topicmodelingapp/documenten/")
-json.dump(output_data, open("C:/Users/KWAGEMAN/Documents/LDA_App/topicmodelingapp/extractedtext/extractedtext.json", "w"))
+output_data = ExtractText.extract_from_directory("topic-modeling-app/documenten/")
+json.dump(output_data, open("topic-modeling-app/extractedtext/extractedtext.json", "w"))

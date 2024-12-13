@@ -46,7 +46,7 @@ class LDA:
             for word, prob in mdl.get_topic_words(k):
                 print("\t", word, prob, sep = "\t")
 
-data = json.load(open("topic-modeling-app/documenten/"))
+data = json.load(open("topic-modeling-app/preprocessing/preprocessing.json"))
 corpus = LDA.corpus(data)    
 LDA.lda(data, corpus, "topic-modeling-app/models/lda_model.bin")
 
