@@ -3,7 +3,6 @@ import json
 import pandas as pd 
 import numpy as np 
 import tomotopy as tp 
-import os 
 
 from app import number_topics    
 
