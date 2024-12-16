@@ -2,9 +2,11 @@
 import streamlit as st
 import subprocess 
 import os 
-import re 
 from pathlib import Path 
 import tempfile 
+import webbrowser 
+import json 
+from preprocess import Preprocess    
 
 LOCAL_REPO_PATH = os.path.join(os.getcwd(), "documenten")
 
@@ -42,57 +44,86 @@ with tab2:
                 st.code(result.stderr)
 
         number_topics = st.slider(label='Hoeveelheid topics', min_value=1, max_value=20, value=20, key=1) 
-        st.write(number_topics)
+        st.write("Geselecteerde aantal topics: ", number_topics)
+        
+        words_to_remove_input = st.text_input("Woorden om te verwijderen (gescheiden door komma's):")
+        if words_to_remove_input:
+            words_to_remove = [word.strip() for word in words_to_remove_input.split(",")]
+        else:
+            words_to_remove = [] 
 
     with col2: 
+        
+        if "results_ready" not in st.session_state:
+            st.session_state.results_ready = False   
+        if "results_file_path" not in st.session_state:  
+            st.session_state.results_file_path = None
+        if "visualization_file_path" not in st.session_state:   
+            st.session_state.visualization_file_path = None 
+            
+        
         if st.button("Verkrijg resultaten en visualisatie!"):
             st.write("Het Latent Dirichlet Model is aan het trainen. De resultaten en de visualisatie verschijnen in een klikbare link.")
-            
-            # Run the LDA script
-            result = subprocess.run(
-                ["python", "latent-dirichlet-allocation/lda.py"],
-                shell=True,
-                capture_output=True,
-                text=True 
-            )
+            result = subprocess.run(["python", "latent-dirichlet-allocation/lda.py"], shell=True, capture_output=True, text=True)
 
             if result.returncode == 0:
                 st.success("LDA model is voltooid!")
-                
-                # Save the output to an HTML file for visualization
                 split_output = result.stdout.split("|")
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as tmp_file:
                     processed_content = "<br>".join(split_output)
                     tmp_file.write(processed_content.encode("utf-8"))
-                    temp_file_path = Path(tmp_file.name)
-                
-                # Create a downloadable link
-                with open(temp_file_path, "rb") as file:
-                    btn = st.download_button(
-                        label="Klik om de resultaten te bekijken",
-                        data=file,
-                        file_name="lda_results.txt",
-                        mime="text/plain"
-                    )
-            else:
-                st.error("Er is een fout opgetreden!")
-                
-                # Save the error details to a text file
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as tmp_file:
-                    tmp_file.write(result.stderr.encode("utf-8"))
-                    temp_file_path = Path(tmp_file.name)
-                
-                # Create a downloadable link for the error log
-                with open(temp_file_path, "rb") as file:
-                    btn = st.download_button(
-                        label="Klik hier om de foutdetails te bekijken",
-                        data=file,
-                        file_name="error_details.txt",
-                        mime="text/plain"
-                    )
+                    st.session_state.results_file_path = Path(tmp_file.name)     
                     
+                st.session_state.results_ready = True 
+                
+                st.write("De visualisatie wordt gegenereerd...")
+                
+                result_visualization = subprocess.run(["python", "visualization.py"], shell=True, capture_output=True, text=True)    
+
+                # Visualization section
+                if result_visualization.returncode == 0:
+                    st.success("Resultaten en visualisatie zijn voltooid!")
+                    st.session_state.visualization_file_path = "models/ldavis.html"  
+                else:
+                    st.error("Er is een fout opgetreden bij het genereren van de visualisatie!")    
+            
+            else: 
+                st.error("Er is een fout opgetreden bij het genereren van de resultaten en de visualisatie!")
+        
+        if st.session_state.results_ready: 
+            st.write("De resultaten zijn klaar!") 
+            with open(st.session_state.results_file_path, "rb") as file: 
+                st.download_button(label="Klik hier om de resultaten te downloaden",
+                                   data=file, 
+                                   file_name="lda_results.txt",
+                                   mime="text/plain") 
+                
+            if st.session_state.visualization_file_path:
+                with open(st.session_state.visualization_file_path, "r") as file:
+                    html_content = file.read()
+                    
+                st.download_button(label="Klik om de visualisatie te downloaden",
+                                   data=html_content,
+                                   file_name="ldavis.html",
+                                   mime="text/html")
+            
+                # if st.button("Open visualisatie in browser"):
+                #     webbrowser.open_new_tab(st.session_state.visualization_file_path) 
+                    
+                                
         inner_topics = st.slider(label='Hoeveelheid topics', min_value=1, max_value=20, value=20, key=2) 
         st.write(inner_topics)
+        
+        remove_button = st.button("Verwijder woorden") 
+        if remove_button: 
+            if words_to_remove: 
+                words_to_remove = [word.lower() for word in words_to_remove] 
+                data = json.load(open("preprocessing/preprocessing.json"))   
+                filter_words = Preprocess.remove_custom_filterwords(data, words_to_remove)
+                json.dump(filter_words, open("preprocessing/preprocessing.json", "w"))
+                st.write("Woorden verwijdert")
+            else: 
+                st.write("Er zijn geen woorden om te verwijderen.")
 
 with tab3:
     col1, col2 = st.columns(2)

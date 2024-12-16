@@ -5,6 +5,8 @@ import numpy as np
 import tomotopy as tp 
 import os 
 
+from app import number_topics    
+
 class LDA: 
     
     @staticmethod 
@@ -21,13 +23,13 @@ class LDA:
         return corpus 
     
     @staticmethod 
-    def lda(data, corpus, save_path): 
+    def lda(data, corpus, save_path, k=number_topics): 
         
         """
         This function trains an LDA model on the data and saves the model to the specified path. 
         
         """
-        mdl = tp.LDAModel(tw=tp.TermWeight.ONE, min_cf=3, rm_top=5, k=5, corpus=corpus)
+        mdl = tp.LDAModel(tw=tp.TermWeight.ONE, min_cf=3, rm_top=5, k=number_topics, corpus=corpus)
         for line in data:
             ch = line.strip().split()
             mdl.add_doc(ch)
@@ -45,6 +47,8 @@ class LDA:
             print("Topic #{}".format(k))
             for word, prob in mdl.get_topic_words(k):
                 print("\t", word, prob, sep = "\t")
+
+
 
 data = json.load(open("C:/Users/KWAGEMAN/Documents/LDA-App/topic-modeling-app/documenten/"))
 corpus = LDA.corpus(data)    

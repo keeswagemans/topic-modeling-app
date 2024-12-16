@@ -1,8 +1,4 @@
 import tomotopy as tp
-import nltk
-from nltk.corpus import stopwords
-import re
-from sklearn.datasets import fetch_20newsgroups
 import numpy as np
 import pyLDAvis
 

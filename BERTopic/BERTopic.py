@@ -1,6 +1,6 @@
 import json  
 from bertopic import BERTopic 
-
+from preprocess import 
 
 class BERTopic: 
     
