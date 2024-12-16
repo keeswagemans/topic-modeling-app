@@ -60,7 +60,8 @@ class LDA:
 dictionary = json.load(open("preprocessing/preprocessing.json"))
 data = dictionary.values()
 final_data = [item for sublist in data for item in sublist]
-corpus = LDA.corpus(final_data)    
+corpus = LDA.corpus(final_data)   
+corpus.save("models/corpus.cps") 
 LDA.lda(dictionary, corpus, "models/lda_model.bin")
 
 

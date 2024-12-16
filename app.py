@@ -45,8 +45,8 @@ with tab2:
         st.write(number_topics)
 
     with col2: 
-        if st.button("Verkrijg resultaten"):
-            st.write("Het Latent Dirichlet Model is aan het trainen. De resultaten verschijnen in een klikbare link.")
+        if st.button("Verkrijg resultaten en visualisatie!"):
+            st.write("Het Latent Dirichlet Model is aan het trainen. De resultaten en de visualisatie verschijnen in een klikbare link.")
             
             # Run the LDA script
             result = subprocess.run(
