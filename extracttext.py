@@ -53,5 +53,5 @@ class ExtractText:
         return all_text 
 
 # Run the code 
-output_data = ExtractText.extract_from_directory("topic-modeling-app/documenten/")
-json.dump(output_data, open("topic-modeling-app/extractedtext/extractedtext.json", "w"))
+output_data = ExtractText.extract_from_directory("documenten/")
+json.dump(output_data, open("extractedtext/extractedtext.json", "w"))

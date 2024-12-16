@@ -1,3 +1,4 @@
+# Import libraries 
 import streamlit as st
 import subprocess 
 import os 
@@ -18,7 +19,7 @@ with tab1:
         
 with tab2:  
     col1, col2 = st.columns(2)
- 
+
     st.markdown("""
             <style>
             .stButton>button {
@@ -32,7 +33,7 @@ with tab2:
     with col1: 
         if st.button("Preprocessing"): 
             st.write("Er wordt aan gewerkt!")
-            result = subprocess.run(["python", "topic-modeling-app/preprocess.py"], shell=True, capture_output=True, text=True)
+            result = subprocess.run(["python", "preprocess.py"], shell=True, capture_output=True, text=True)
             
             if result.returncode == 0: 
                 st.success("Preprocessing voltooid!")
@@ -49,10 +50,10 @@ with tab2:
             
             # Run the LDA script
             result = subprocess.run(
-                ["python", "topic-modeling-app/latent-dirichlet-allocation/lda.py"],
+                ["python", "latent-dirichlet-allocation/lda.py"],
                 shell=True,
                 capture_output=True,
-                text=True
+                text=True 
             )
 
             if result.returncode == 0:
@@ -70,8 +71,8 @@ with tab2:
                     btn = st.download_button(
                         label="Klik om de resultaten te bekijken",
                         data=file,
-                        file_name="lda_visualization.html",
-                        mime="text/html"
+                        file_name="lda_results.txt",
+                        mime="text/plain"
                     )
             else:
                 st.error("Er is een fout opgetreden!")
@@ -111,7 +112,7 @@ with tab3:
             st.write("Er wordt achter de schermen keihard gewerkt!")
         number_topics_bert = st.slider(label='Het aantal topics!', min_value=1, max_value=20, value=20, key=3)  
         st.write(number_topics_bert)
-
+         
     with col2: 
         if st.button("Verkrijg resultaten!"):
             st.write("Het Latent Dirichlet Model is aan het trainen. De resultaten verschijnen in een klikbare link zodra de machine klaar is.")
@@ -158,6 +159,11 @@ with tab4:
                     st.markdown(document)   
             else:
                 st.write("Nog geen documenten in de map gevonden.")
+                
+        if st.button("Extraheer teksten uit bestanden!"): 
+            result = subprocess.run(["python", "extracttext.py"], capture_output=True, text=True)
+            st.success("Teksten succesvol geëxtraheerd uit bestanden.")
+            # st.code(result.stdout) 
 
         with col2:
             uploaded_files = st.file_uploader("Kies een PDF of DOCX bestand.", type=["pdf", "docx"], accept_multiple_files=True)
@@ -166,7 +172,7 @@ with tab4:
                 if st.button("Documenten uploaden en teksten extraheren"): 
                     for uploaded_file in uploaded_files: 
                         try:
-                            save_path = os.path.join("topic-modeling-app/documenten/", uploaded_file.name)
+                            save_path = os.path.join("documenten/", uploaded_file.name)
                             with open(save_path, "wb") as f: 
                                 f.write(uploaded_file.getvalue())
                             st.success(f"Document {uploaded_file.name} succesvol geupload.")
@@ -175,7 +181,7 @@ with tab4:
                             st.error(f"Er is een fout opgetreden met {uploaded_file.name}: {e}.")
                 
                     try:
-                        result = subprocess.run(["python", "topic-modeling-app/extracttext.py"], capture_output=True, text=True)
+                        result = subprocess.run(["python", "extracttext.py"], capture_output=True, text=True)
                         st.success("Documenten succesvol geupload en teksten succesvol geëxtraheerd uit bestanden.")
                         st.code(result.stdout)
                     except Exception as e:

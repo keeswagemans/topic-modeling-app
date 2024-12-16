@@ -66,7 +66,7 @@ class Preprocess:
         dictionary = {}
 
         df_tsv = pd.read_csv(
-            'topic-modeling-app/molex/molex_22_02_2022.tsv',
+            'molex/molex_22_02_2022.tsv',
             delimiter='\t', engine='python'
         )
         filterwords = df_tsv[
