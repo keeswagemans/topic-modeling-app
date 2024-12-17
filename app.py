@@ -4,16 +4,16 @@ import subprocess
 import os 
 from pathlib import Path 
 import tempfile 
-import webbrowser 
 import json 
-from preprocess import Preprocess    
+from preprocess import Preprocess  
+
 
 LOCAL_REPO_PATH = os.path.join(os.getcwd(), "documenten")
 
 tab1, tab2, tab3, tab4 = st.tabs(['Over project', 'LDA', 'BERTopic', 'Documenten'])
 
 with tab1: 
-    st.title("Topic Modeling voor het Ministerie van Sociale Zaken en Werkgelegenheid")
+    st.title("Topic Modeling voor het ministerie van Sociale Zaken en Werkgelegenheid")
     text = "Het Latent Dirichlet Allocation (LDA)-model is ontworpen om kernonderwerpen binnen documenten te identificeren. Dit model kan het Ministerie van Sociale Zaken en Werkgelegenheid ondersteunen bij het proactief openbaar maken van documenten over onderwerpen die waarschijnlijk van publiek belang zijn. Naast het traditionele LDA-model is er ook een alternatief beschikbaar: het BERTopic-model. /n/n LDA is een probabilistisch model dat documenten analyseert door deze op te splitsen in een combinatie van onderwerpen. Elk onderwerp wordt gekarakteriseerd door een verzameling woorden met een bepaalde waarschijnlijkheid. Het model biedt een eenvoudige en snelle manier om documenten te groeperen op basis van deze onderwerpen, wat het geschikt maakt voor basisanalyses van grote datasets. \n\n Het BERTopic-model gaat een stap verder door gebruik te maken van transformer-gebaseerde taalmodellen zoals BERT. Deze modellen begrijpen de semantische betekenis van woorden en zinnen en zetten deze om in numerieke representaties (embeddings). BERTopic clustert deze representaties en bepaalt welke clusters als onderwerpen gelden. Dit maakt het model bijzonder effectief in het detecteren van onderwerpen in complexe of lange teksten. Bovendien biedt BERTopic de mogelijkheid om dynamisch onderwerpen te genereren, waardoor het flexibeler en nauwkeuriger is dan LDA.\n\n Het belangrijkste verschil tussen beide modellen is hun aanpak. LDA richt zich op afzonderlijke woorden en gebruikt statistische verbanden om onderwerpen te definiëren, terwijl BERTopic zinnen semantisch begrijpt en daardoor dieper inzicht biedt. Waar LDA eenvoudiger en sneller is, levert BERTopic rijkere en meer gedetailleerde inzichten. Dit maakt LDA geschikt voor basisanalyses, terwijl BERTopic ideaal is voor het analyseren van complexe beleidsdocumenten.\n\n Voor het Ministerie kan het gebruik van beide modellen nuttig zijn, afhankelijk van de mate van detail en precisie die nodig is. BERTopic is bij uitstek geschikt wanneer de focus ligt op een diepere interpretatie van teksten, terwijl LDA kan worden ingezet voor bredere, minder gedetailleerde analyses."
     paragraphs = text.split("/n/n")
     for i, paragraph in enumerate(paragraphs, 1):
@@ -121,7 +121,7 @@ with tab2:
                 data = json.load(open("preprocessing/preprocessing.json"))   
                 filter_words = Preprocess.remove_custom_filterwords(data, words_to_remove)
                 json.dump(filter_words, open("preprocessing/preprocessing.json", "w"))
-                st.write("Woorden verwijdert")
+                st.write("Woorden uit tekstcorpus gehaald")
             else: 
                 st.write("Er zijn geen woorden om te verwijderen.")
 
@@ -191,13 +191,14 @@ with tab4:
             else:
                 st.write("Nog geen documenten in de map gevonden.")
                 
+                
         if st.button("Extraheer teksten uit bestanden!"): 
             result = subprocess.run(["python", "extracttext.py"], capture_output=True, text=True)
             st.success("Teksten succesvol geëxtraheerd uit bestanden.")
             # st.code(result.stdout) 
 
-        with col2:
-            uploaded_files = st.file_uploader("Kies een PDF of DOCX bestand.", type=["pdf", "docx"], accept_multiple_files=True)
+        with col2:     
+            uploaded_files = st.file_uploader("Kies een PDF of DOCX bestand.", type=["pdf", "docx"], accept_multiple_files=True)   
 
             if uploaded_files:
                 if st.button("Documenten uploaden en teksten extraheren"): 

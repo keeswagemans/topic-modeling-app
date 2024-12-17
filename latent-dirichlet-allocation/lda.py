@@ -27,7 +27,7 @@ class LDA:
         This function trains an LDA model on the data and saves the model to the specified path. 
         
         """
-        mdl = tp.LDAModel(tw=tp.TermWeight.ONE, min_cf=3, rm_top=5, k=5, corpus=corpus)
+        mdl = tp.LDAModel(tw=tp.TermWeight.ONE, min_cf=3, rm_top=5, k=10, corpus=corpus)
         
         for pdf, words in input_dict.items():
             mdl.add_doc(words)   

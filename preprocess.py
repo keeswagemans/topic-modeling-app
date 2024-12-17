@@ -9,7 +9,7 @@ import json
 class Preprocess:
 
     @staticmethod
-    def preprocessing(text_list):
+    def preprocessing(text_dict):
         """
         Regular preprocessing steps for a list of strings.
 
@@ -18,9 +18,8 @@ class Preprocess:
         url_pattern = re.compile(r'https?://\S+|www\.\S+')
         punctuation_pattern = r'[^\w\s-]'
 
-        for key, value in text_list.items():
+        for key, value in text_dict.items():
             text_data_cleaned = []
-            print(value)
             words = value.split()
             for word in words:
                 word = re.sub(url_pattern, '', word)
@@ -137,5 +136,4 @@ data_stopwords_dutch = Preprocess.remove_stopwords(data_preprocessed, 'dutch')
 data_stopwords_english = Preprocess.remove_stopwords(data_stopwords_dutch, 'english')
 data_filterwords = Preprocess.remove_filterwords(data_stopwords_english)
 data_lemma = Preprocess.lemmatization(data_filterwords)
-print(data_lemma)
 json.dump(data_lemma, open("preprocessing/preprocessing.json", "w"))

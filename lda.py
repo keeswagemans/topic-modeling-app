@@ -22,13 +22,13 @@ class LDA:
         return corpus 
     
     @staticmethod 
-    def lda(data, corpus, save_path, k=number_topics): 
+    def lda(data, corpus, save_path, k=10): 
         
         """
         This function trains an LDA model on the data and saves the model to the specified path. 
         
         """
-        mdl = tp.LDAModel(tw=tp.TermWeight.ONE, min_cf=3, rm_top=5, k=number_topics, corpus=corpus)
+        mdl = tp.LDAModel(tw=tp.TermWeight.ONE, min_cf=3, rm_top=5, k=10, corpus=corpus)
         for line in data:
             ch = line.strip().split()
             mdl.add_doc(ch)
