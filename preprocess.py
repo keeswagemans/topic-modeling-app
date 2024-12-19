@@ -16,7 +16,7 @@ class Preprocess:
         """
         dictionary = {}
         url_pattern = re.compile(r'https?://\S+|www\.\S+')
-        punctuation_pattern = r'[^\w\s-]'
+        punctuation_pattern = r'[^\w\s-]'                                                                                                                                                                                                                                                                                                                                                                
 
         for key, value in text_dict.items():
             text_data_cleaned = []

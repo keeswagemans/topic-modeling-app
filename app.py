@@ -5,12 +5,12 @@ import os
 from pathlib import Path 
 import tempfile 
 import json 
-from preprocess import Preprocess  
 
 
 LOCAL_REPO_PATH = os.path.join(os.getcwd(), "documenten")
 
-tab1, tab2, tab3, tab4 = st.tabs(['Over project', 'LDA', 'BERTopic', 'Documenten'])
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(['Over project', 'Documenten Manager', 'Preprocessing', 'Over LDA', 'LDA', 'Over BERTopic', 'BERTopic'])  
+                                            
 
 with tab1: 
     st.title("Topic Modeling voor het ministerie van Sociale Zaken en Werkgelegenheid")
@@ -19,7 +19,76 @@ with tab1:
     for i, paragraph in enumerate(paragraphs, 1):
         st.write(paragraph)
         
-with tab2:  
+with tab2: 
+    st.title("Documenten Manager") 
+    st.write("De Documenten Manager is de pagina waar men documenten kan uploaden en en teksten uit de bestanden kan extraheren. De geëxtraheerde teksten worden vervolgens gebruikt voor de preprocessing en het trainen van de modellen.") 
+        
+    st.markdown("""
+            <style>
+            .stButton>button
+                    {
+            width: 340px;
+            background-color: #01689b; 
+            color: white; 
+            margin: 0 auto; 
+            }
+            </style>
+            """, unsafe_allow_html=True)
+
+    os.makedirs(LOCAL_REPO_PATH, exist_ok=True)  # Ensure the directory exists
+
+    # Create a two-column layout
+    col1, col2 = st.columns(2)
+
+    # Button to get list of documents in the repository
+    with col1:
+            uploaded_files = st.file_uploader("Kies een PDF of DOCX bestand.", type=["pdf", "docx"], accept_multiple_files=True)   
+
+            if uploaded_files:
+                if st.button("Documenten uploaden en teksten extraheren"): 
+                    for uploaded_file in uploaded_files: 
+                        try:
+                            save_path = os.path.join("documenten/", uploaded_file.name)
+                            with open(save_path, "wb") as f: 
+                                f.write(uploaded_file.getvalue())
+                            st.success(f"Document {uploaded_file.name} succesvol geupload.")
+                            st.info(f"Bestand opgeslagen in {save_path}")
+                        except Exception as e:
+                            st.error(f"Er is een fout opgetreden met {uploaded_file.name}: {e}.")
+                
+                    try:
+                        result = subprocess.run(["python", "extracttext.py"], capture_output=True, text=True)
+                        st.success("Documenten succesvol geupload en teksten succesvol geëxtraheerd uit bestanden.")
+                        st.code(result.stdout)
+                    except Exception as e:
+                        st.error(f"Fout bij extraheren teksten: {e}.") 
+            
+    with col2:  
+        if st.button("Verkrijg lijst van de documenten in de map"):
+            # List the files in the local repository
+            documents = os.listdir(LOCAL_REPO_PATH)
+            if documents:
+                st.write("Documenten die beschikbaar zijn in de map:")
+                for document in documents:
+                    st.markdown('''
+                                <style>
+                                    - [data-testid="stMarkdownContainer"] ul{
+                                padding-left:40px;v
+                                }
+                                </style>
+                                ''', unsafe_allow_html=True) 
+                    st.markdown(document)   
+            else:
+                st.write("Nog geen documenten in de map gevonden.")
+            
+        if st.button("Extraheer teksten uit bestanden"): 
+            result = subprocess.run(["python", "extracttext.py"], capture_output=True, text=True)
+            st.success("Teksten succesvol geëxtraheerd uit bestanden.")
+            # st.code(result.stdout) 
+
+        
+with tab3: 
+    st.title("Preprocessing")
     col1, col2 = st.columns(2)
 
     st.markdown("""
@@ -33,19 +102,6 @@ with tab2:
             """, unsafe_allow_html=True)
 
     with col1: 
-        if st.button("Preprocessing"): 
-            st.write("Er wordt aan gewerkt!")
-            result = subprocess.run(["python", "preprocess.py"], shell=True, capture_output=True, text=True)
-            
-            if result.returncode == 0: 
-                st.success("Preprocessing voltooid!")
-            else:
-                st.error("Er is een fout opgetreden!")
-                st.code(result.stderr)
-
-        number_topics = st.slider(label='Hoeveelheid topics', min_value=1, max_value=20, value=20, key=1) 
-        st.write("Geselecteerde aantal topics: ", number_topics)
-        
         words_to_remove_input = st.text_input("Woorden om te verwijderen (gescheiden door komma's):")
         if words_to_remove_input:
             words_to_remove = [word.strip() for word in words_to_remove_input.split(",")]
@@ -53,7 +109,45 @@ with tab2:
             words_to_remove = [] 
 
     with col2: 
+        if st.button("Preprocessing"): 
+            st.write("Er wordt aan gewerkt!")
+           
+            result = subprocess.run(["python", "/preprocess.py"], shell=True, capture_output=True, text=True)
+            if result.returncode == 0:
+                st.success("Preprocessing voltooid!")
+            else:
+                st.error("Er is een fout opgetreden!")
+                st.code(result.stderr)
+                
+        remove_button = st.button("Verwijder woorden")          
+        if remove_button: 
+            if words_to_remove: 
+                words_to_remove = [word.lower() for word in words_to_remove] 
+                json.dump(words_to_remove, open("preprocessing/words_to_remove.json", "w")) 
+                result = subprocess.run(["python", "remove_words.py"], capture_output=True, text=True)
+                st.write("Woorden uit tekstcorpus gehaald")
+            else: 
+                st.write("Er zijn geen woorden om te verwijderen.")
+    
+            
+with tab4: 
+    st.title("Over LDA") 
+    st.write("Hieronder komt een schematische weergave van wat een Latent Dirichlet Allocation-model is.") 
+
+with tab5: 
+    st.title("Latent Dirichlet Allocation") 
+    st.write("Kies hieronder de parameters voor het trainen van het Latent Dirichlet Allocation-model. Druk links op trainen om het model te trainen.") 
+    
+    col1, col2 = st.columns(2) 
+    
+    with col1: 
+        inner_topics = st.slider(label='Hoeveelheid topics', min_value=1, max_value=20, value=20, key=2) 
+        st.write(inner_topics) 
         
+        number_topics_bert = st.slider(label='Het aantal topics!', min_value=1, max_value=20, value=20, key=3)  
+        st.write(number_topics_bert)
+        
+    with col2: 
         if "results_ready" not in st.session_state:
             st.session_state.results_ready = False   
         if "results_file_path" not in st.session_state:  
@@ -85,137 +179,35 @@ with tab2:
                     st.success("Resultaten en visualisatie zijn voltooid!")
                     st.session_state.visualization_file_path = "models/ldavis.html"  
                 else:
-                    st.error("Er is een fout opgetreden bij het genereren van de visualisatie!")    
-            
+                    st.error("Er is een fout opgetreden bij het genereren van de visualisatie!") 
+                    st.write(result_visualization.stderr) 
             else: 
                 st.error("Er is een fout opgetreden bij het genereren van de resultaten en de visualisatie!")
-        
+                st.write(result.stderr) 
+                
         if st.session_state.results_ready: 
             st.write("De resultaten zijn klaar!") 
             with open(st.session_state.results_file_path, "rb") as file: 
                 st.download_button(label="Klik hier om de resultaten te downloaden",
-                                   data=file, 
-                                   file_name="lda_results.txt",
-                                   mime="text/plain") 
+                                    data=file, 
+                                    file_name="lda_results.txt",
+                                    mime="text/plain") 
                 
             if st.session_state.visualization_file_path:
                 with open(st.session_state.visualization_file_path, "r") as file:
                     html_content = file.read()
                     
                 st.download_button(label="Klik om de visualisatie te downloaden",
-                                   data=html_content,
-                                   file_name="ldavis.html",
-                                   mime="text/html")
-            
-                # if st.button("Open visualisatie in browser"):
-                #     webbrowser.open_new_tab(st.session_state.visualization_file_path) 
-                    
-                                
-        inner_topics = st.slider(label='Hoeveelheid topics', min_value=1, max_value=20, value=20, key=2) 
-        st.write(inner_topics)
-        
-        remove_button = st.button("Verwijder woorden") 
-        if remove_button: 
-            if words_to_remove: 
-                words_to_remove = [word.lower() for word in words_to_remove] 
-                data = json.load(open("preprocessing/preprocessing.json"))   
-                filter_words = Preprocess.remove_custom_filterwords(data, words_to_remove)
-                json.dump(filter_words, open("preprocessing/preprocessing.json", "w"))
-                st.write("Woorden uit tekstcorpus gehaald")
-            else: 
-                st.write("Er zijn geen woorden om te verwijderen.")
-
-with tab3:
-    col1, col2 = st.columns(2)
-
-    st.markdown("""
-            <style>
-            .stButton>button {
-            width: 340px;
-            background-color: #01689b; 
-            color: white; 
-            }
-            </style>
-            """, unsafe_allow_html=True)
-
-    with col1: 
-        if st.button("Preprocessing!"): 
-            st.write("Er wordt achter de schermen keihard gewerkt!")
-        number_topics_bert = st.slider(label='Het aantal topics!', min_value=1, max_value=20, value=20, key=3)  
-        st.write(number_topics_bert)
-         
-    with col2: 
-        if st.button("Verkrijg resultaten!"):
-            st.write("Het Latent Dirichlet Model is aan het trainen. De resultaten verschijnen in een klikbare link zodra de machine klaar is.")
-        inner_topics_bert = st.slider(label='Het aantal topics in de documenten!', min_value=1, max_value=20, value=20, key=4)
-        st.write(inner_topics_bert) 
-
-with tab4: 
-    col1, col2, col3 = st.columns(3)
-
-    st.markdown("""
-            <style>
-            .stButton>button
-                 {
-            width: 340px;
-            background-color: #01689b; 
-            color: white; 
-            margin: 0 auto; 
-            }
-            </style>
-            """, unsafe_allow_html=True)
+                                    data=html_content,
+                                    file_name="ldavis.html",
+                                    mime="text/html")
+                        
+with tab6: 
+    st.title("Over BERTopic") 
+    st.write("Hieronder komt een schematische weergave van wat een BERTopic-model is.") 
     
-    os.makedirs(LOCAL_REPO_PATH, exist_ok=True)  # Ensure the directory exists
+with tab7: 
+    st.title("BERTopic") 
+    st.write("Kies links de paramaters voor het trainen van het BERTopic-model. Druk rechts op trainen om het model te trainen.") 
 
-    st.title("Documenten Manager")
-
-    # Create a two-column layout
-    col1, col2 = st.columns(2)
-
-    # Button to get list of documents in the repository
-    with col1:
-        if st.button("Verkrijg lijst van de documenten in de map!"):
-            # List the files in the local repository
-            documents = os.listdir(LOCAL_REPO_PATH)
-            if documents:
-                st.write("Documenten die beschikbaar zijn in de map:")
-                for document in documents:
-                    st.markdown('''
-                                <style>
-                                 - [data-testid="stMarkdownContainer"] ul{
-                                padding-left:40px;v
-                                }
-                                </style>
-                                ''', unsafe_allow_html=True) 
-                    st.markdown(document)   
-            else:
-                st.write("Nog geen documenten in de map gevonden.")
-                
-                
-        if st.button("Extraheer teksten uit bestanden!"): 
-            result = subprocess.run(["python", "extracttext.py"], capture_output=True, text=True)
-            st.success("Teksten succesvol geëxtraheerd uit bestanden.")
-            # st.code(result.stdout) 
-
-        with col2:     
-            uploaded_files = st.file_uploader("Kies een PDF of DOCX bestand.", type=["pdf", "docx"], accept_multiple_files=True)   
-
-            if uploaded_files:
-                if st.button("Documenten uploaden en teksten extraheren"): 
-                    for uploaded_file in uploaded_files: 
-                        try:
-                            save_path = os.path.join("documenten/", uploaded_file.name)
-                            with open(save_path, "wb") as f: 
-                                f.write(uploaded_file.getvalue())
-                            st.success(f"Document {uploaded_file.name} succesvol geupload.")
-                            st.info(f"Bestand opgeslagen in {save_path}")
-                        except Exception as e:
-                            st.error(f"Er is een fout opgetreden met {uploaded_file.name}: {e}.")
-                
-                    try:
-                        result = subprocess.run(["python", "extracttext.py"], capture_output=True, text=True)
-                        st.success("Documenten succesvol geupload en teksten succesvol geëxtraheerd uit bestanden.")
-                        st.code(result.stdout)
-                    except Exception as e:
-                        st.error(f"Fout bij extraheren teksten: {e}.") 
             
