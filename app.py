@@ -258,9 +258,10 @@ with tab7:
         result = subprocess.run(["python", "LDALLM.py"], shell=True, capture_output=True, text=True)
         if result.returncode == 0:
             st.success("LLM LDA model is voltooid!")
+            output = result.stdout   
             with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as tmp_file:
-                tmp_file.write(result.stdout.encode("utf-8"))
-                st.session_state.results_file_path = Path(tmp_file.name) 
+                tmp_file.write(output.encode("utf-8")) 
+                st.session_state.results_file_path_llm_lda = Path(tmp_file.name)     
             
             st.session_state.results_ready_llm_lda = True 
             
@@ -275,15 +276,5 @@ with tab7:
                                 data=file, 
                                 file_name="llm_lda_results.txt",
                                 mime="text/plain")   
-            
-            
-            
-    # if st.session_state.results_ready: 
-    #         st.write("De resultaten zijn klaar!") 
-    #         with open(st.session_state.results_file_path, "rb") as file: 
-    #             st.download_button(label="Klik hier om de resultaten te downloaden",
-    #                                 data=file, 
-    #                                 file_name="lda_results.txt",
-    #                                 mime="text/plain") 
-        
+                  
     

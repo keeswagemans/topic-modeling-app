@@ -78,32 +78,31 @@ class LDALLM():
             string_lda += str(list) + "\n" 
             
         # Create the template
-        template_string = '''Describe the topic of each of the {num_topics} 
-            double-quote delimited lists in a simple sentence and also write down 
-            three possible different subthemes. The lists are the result of an 
-            algorithm for topic discovery.
-            Do not provide an introduction or a conclusion, only describe the 
-            topics. Do not mention the word "topic" when describing the topics.
-            Use the following template for the response.
+        template_string = '''
+        Beschrijf het onderwerp van elk van de {num_topics} dubbel aanhalingstekens omgeven lijsten in een eenvoudige zin en schrijf daarnaast drie mogelijke verschillende subthema's op. De lijsten zijn het resultaat van een algoritme voor het ontdekken van onderwerpen.  
+        Geef geen introductie of conclusie, beschrijf alleen de onderwerpen. Vermeld het woord "onderwerp" niet bij het beschrijven van de onderwerpen.  
+        Gebruik het volgende sjabloon voor de reactie.  
 
-            1: <<<(sentence describing the topic)>>>
-            - <<<(Phrase describing the first subtheme)>>>
-            - <<<(Phrase describing the second subtheme)>>>
-            - <<<(Phrase describing the third subtheme)>>>
+        1: <<<(zin die het onderwerp beschrijft)>>>
+        - <<<(Frase die het eerste subthema beschrijft)>>>
+        - <<<(Frase die het tweede subthema beschrijft)>>>
+        - <<<(Frase die het derde subthema beschrijft)>>>
 
-            2: <<<(sentence describing the topic)>>>
-            - <<<(Phrase describing the first subtheme)>>>
-            - <<<(Phrase describing the second subtheme)>>>
-            - <<<(Phrase describing the third subtheme)>>>
+        2: <<<(zin die het onderwerp beschrijft)>>>
+        - <<<(Frase die het eerste subthema beschrijft)>>>
+        - <<<(Frase die het tweede subthema beschrijft)>>>
+        - <<<(Frase die het derde subthema beschrijft)>>>
 
-            ...
+        ...
 
-            n: <<<(sentence describing the topic)>>>
-            - <<<(Phrase describing the first subtheme)>>>
-            - <<<(Phrase describing the second subtheme)>>>
-            - <<<(Phrase describing the third subtheme)>>>
+        n: <<<(zin die het onderwerp beschrijft)>>>
+        - <<<(Frase die het eerste subthema beschrijft)>>>
+        - <<<(Frase die het tweede subthema beschrijft)>>>
+        - <<<(Frase die het derde subthema beschrijft)>>>
 
-            Lists: """{string_lda}""" '''
+        Lijsten: """{string_lda}"""
+        '''
+
 
         # LLM call
         prompt_template = ChatPromptTemplate.from_template(template_string)
