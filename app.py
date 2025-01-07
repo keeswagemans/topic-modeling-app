@@ -1,6 +1,8 @@
 # Import libraries 
 import streamlit as st
+import pandas as pd 
 import subprocess 
+from subprocess import Popen 
 import os 
 from pathlib import Path 
 import tempfile 
@@ -9,19 +11,19 @@ import json
 
 LOCAL_REPO_PATH = os.path.join(os.getcwd(), "documenten")
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(['Over project', 'Documenten Manager', 'Preprocessing', 'Over LDA', 'LDA', 'Over BERTopic', 'BERTopic'])  
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(['Over project', 'Documenten Manager', 'Preprocessing', 'Over LDA', 'LDA', 'Over LLM LDA', 'LLM LDA']) 
                                             
 
 with tab1: 
     st.title("Topic Modeling voor het ministerie van Sociale Zaken en Werkgelegenheid")
-    text = "Het Latent Dirichlet Allocation (LDA)-model is ontworpen om kernonderwerpen binnen documenten te identificeren. Dit model kan het Ministerie van Sociale Zaken en Werkgelegenheid ondersteunen bij het proactief openbaar maken van documenten over onderwerpen die waarschijnlijk van publiek belang zijn. Naast het traditionele LDA-model is er ook een alternatief beschikbaar: het BERTopic-model. /n/n LDA is een probabilistisch model dat documenten analyseert door deze op te splitsen in een combinatie van onderwerpen. Elk onderwerp wordt gekarakteriseerd door een verzameling woorden met een bepaalde waarschijnlijkheid. Het model biedt een eenvoudige en snelle manier om documenten te groeperen op basis van deze onderwerpen, wat het geschikt maakt voor basisanalyses van grote datasets. \n\n Het BERTopic-model gaat een stap verder door gebruik te maken van transformer-gebaseerde taalmodellen zoals BERT. Deze modellen begrijpen de semantische betekenis van woorden en zinnen en zetten deze om in numerieke representaties (embeddings). BERTopic clustert deze representaties en bepaalt welke clusters als onderwerpen gelden. Dit maakt het model bijzonder effectief in het detecteren van onderwerpen in complexe of lange teksten. Bovendien biedt BERTopic de mogelijkheid om dynamisch onderwerpen te genereren, waardoor het flexibeler en nauwkeuriger is dan LDA.\n\n Het belangrijkste verschil tussen beide modellen is hun aanpak. LDA richt zich op afzonderlijke woorden en gebruikt statistische verbanden om onderwerpen te definiëren, terwijl BERTopic zinnen semantisch begrijpt en daardoor dieper inzicht biedt. Waar LDA eenvoudiger en sneller is, levert BERTopic rijkere en meer gedetailleerde inzichten. Dit maakt LDA geschikt voor basisanalyses, terwijl BERTopic ideaal is voor het analyseren van complexe beleidsdocumenten.\n\n Voor het Ministerie kan het gebruik van beide modellen nuttig zijn, afhankelijk van de mate van detail en precisie die nodig is. BERTopic is bij uitstek geschikt wanneer de focus ligt op een diepere interpretatie van teksten, terwijl LDA kan worden ingezet voor bredere, minder gedetailleerde analyses."
+    text = "De modellen in deze webapp kunnen gebruikt worden om topics te modelleren uit tekstcorpora. Voordat de modellen getraind kunnen worden, dienen documenten geüpload te worden. Dit kan gedaan worden in de Documenten Manager. Na het toevoegen van de documenten kunnen de teksten geëxtraheerd worden onder hetzelfde kopje. Daarna kunnen de teksten gepreprocessed worden. In datzelfde tabblad kunnen woorden gekozen worden, die uit de tekstcorpus verwijdert dienen te worden. In Over LDA en Over BERTopic worden de modellen kort toegelicht. In de tabbladen LDA en BERTopic kunnen de parameters voor de modellen gekozen worden en kan het model getraind worden. De resultaten en visualisaties van de modellen zijn te downloaden in de respectievelijke tab."
     paragraphs = text.split("/n/n")
     for i, paragraph in enumerate(paragraphs, 1):
         st.write(paragraph)
         
 with tab2: 
     st.title("Documenten Manager") 
-    st.write("De Documenten Manager is de pagina waar men documenten kan uploaden en en teksten uit de bestanden kan extraheren. De geëxtraheerde teksten worden vervolgens gebruikt voor de preprocessing en het trainen van de modellen.") 
+    st.write("") 
         
     st.markdown("""
             <style>
@@ -81,14 +83,15 @@ with tab2:
             else:
                 st.write("Nog geen documenten in de map gevonden.")
             
-        if st.button("Extraheer teksten uit bestanden"): 
-            result = subprocess.run(["python", "extracttext.py"], capture_output=True, text=True)
+        if st.button("Extraheer teksten uit bestanden"):
+            result = subprocess.run(["python", "extracttext.py"])
             st.success("Teksten succesvol geëxtraheerd uit bestanden.")
             # st.code(result.stdout) 
 
         
 with tab3: 
     st.title("Preprocessing")
+    st.write("Links kun je woorden intikken om te verwijderen, druk op enter en klik vervolgens op de knop 'Verwijder woorden' rechts. Wil je geen woorden verwijderen, druk dan gelijk op de knop 'Preprocessing'. Eerst preprocessen voodat je woorden verwijdert, is raadzaam.")
     col1, col2 = st.columns(2)
 
     st.markdown("""
@@ -112,7 +115,7 @@ with tab3:
         if st.button("Preprocessing"): 
             st.write("Er wordt aan gewerkt!")
            
-            result = subprocess.run(["python", "/preprocess.py"], shell=True, capture_output=True, text=True)
+            result = subprocess.run(["python", "preprocess.py"], shell=True, capture_output=True, text=True)
             if result.returncode == 0:
                 st.success("Preprocessing voltooid!")
             else:
@@ -136,18 +139,53 @@ with tab4:
 
 with tab5: 
     st.title("Latent Dirichlet Allocation") 
-    st.write("Kies hieronder de parameters voor het trainen van het Latent Dirichlet Allocation-model. Druk links op trainen om het model te trainen.") 
+    st.write("Kies hieronder de parameters voor het trainen van het Latent Dirichlet Allocation-model. Voor een uitvoerige beschrijving van het Latent Dirichlet Allocation-model, bekijk het tabblad 'Over LDA'. De parameters  die voor het LDA-model gebruikt worden zijn:") 
+    st.markdown("- Minimale collectiefrequentie van woorden: Het minimale aantal keren dat een woord in de gehele corpus moet voorkomen om opgenomen te worden in de analyse. Woorden die minder vaak voorkomen, worden verwijderd. Laat dit veld leeg om de standaardwaarde 0 te gebruiken. De bovengrens is 10000.")
+    st.markdown("- Minimale documentfrequentie van woorden: Het minimale aantal documenten waarin een woord moet voorkomen. Woorden die minder vaak voorkomen dan de gespecifideerde waarde, worden uitgesloten. Laat dit veld leeg om de standaardwaarde 0 te gebruiken. De bovengrens is 10000. Alle woorden die aan deze grens voldoen, worden in deze analyse meegenomen.")
+    st.markdown("- Aantal te verwijderen 'top'-woorden: Het aantal meest voorkomende woorden in de corpus dat verwijderd wordt. Laat dit veld leeg om de standaardwaarde 0 te gebruiken. Alle woorden die voldoen aan deze drempel worden meegenomen in de analyse.")
+    st.markdown("- K (aantal topics): Het aantal topics dat door het model gegenereerd moet worden. Kies een waarde tussen 1 ~ 32676.")
+    st.markdown("- Alpha is de hyperparameter van de Dirichlet-verdeling voor de documenten-topicverdeling. Kies voor een symmetric prior of een asymmetric prior. Kijk in 'Over LDA' voor meer informatie.")
+    st.markdown("- Eta is de hyperparameter van de Dirichlet-verdeling voor de topic-woordverdeling. Een assymetrische eta zorgt ervoor dat sommige woorden prominenter in de topics voorkomen. Keuze tussen 0 en 1.")
+    
+    st.markdown('''
+                <style>
+                [data-testid="stMarkdownContainer"] ul{
+                    list-style-position: inside;
+                    list-style-type: square;
+                    }
+                    </style>
+                    ''', unsafe_allow_html=True
+                    )
     
     col1, col2 = st.columns(2) 
     
     with col1: 
-        inner_topics = st.slider(label='Hoeveelheid topics', min_value=1, max_value=20, value=20, key=2) 
-        st.write(inner_topics) 
+        # Define form_callback 
+        def form_callback():
+            # Save session state values to an external file
+            parameters = {
+                "min_cf": min_cf_input,
+                "min_df": min_df_input,
+                "top_words": top_words_input,
+                "number_topics": number_topics_input,
+                "alpha": alpha_input,
+                "eta": eta_input
+            }
+            with open("parameters.json", "w") as f:
+                json.dump(parameters, f)
         
-        number_topics_bert = st.slider(label='Het aantal topics!', min_value=1, max_value=20, value=20, key=3)  
-        st.write(number_topics_bert)
-        
-    with col2: 
+        # Initialize the parameters for training the LDA model
+        with st.form(key="my_form"):
+            min_cf_input = st.number_input(label="Minimale collectie frequentie van woorden:", min_value=0, max_value=10000, value=0, key="min_cf")
+            min_df_input = st.number_input(label="Minimale documentfrequentie van woorden:", min_value=0, max_value=10000, value=0, key="min_df")  
+            top_words_input = st.number_input(label="Aantal te verwijderen 'top-woorden:", min_value=0, max_value=10000, value=5, key="top_words") 
+            number_topics_input = st.number_input(label=' K (het aantal topics)', min_value=1, max_value=20, value=20, key="number_topics")
+            alpha_input = st.radio("Alpha:", ["symmetric", "asymmetric"], key="alpha")  
+            eta_input = st.slider("Eta:", min_value=0.0, max_value=1.0, value=0.5, step=0.1, key="eta") 
+            submit_button = st.form_submit_button(label="Leg parameters vast", on_click=form_callback)
+    
+    with col2:  
+        # Initialize the state variables and initialize the button for results and visualization   
         if "results_ready" not in st.session_state:
             st.session_state.results_ready = False   
         if "results_file_path" not in st.session_state:  
@@ -155,10 +193,10 @@ with tab5:
         if "visualization_file_path" not in st.session_state:   
             st.session_state.visualization_file_path = None 
             
-        
+        # Verkrijg resultaten en visualisatie 
         if st.button("Verkrijg resultaten en visualisatie!"):
-            st.write("Het Latent Dirichlet Model is aan het trainen. De resultaten en de visualisatie verschijnen in een klikbare link.")
-            result = subprocess.run(["python", "latent-dirichlet-allocation/lda.py"], shell=True, capture_output=True, text=True)
+            st.write("Het Latent Dirichlet Allocation Model is aan het trainen. De resultaten en de visualisatie verschijnen in een klikbare link.")
+            result = subprocess.run(["python", "lda.py"], shell=True, capture_output=True, text=True)
 
             if result.returncode == 0:
                 st.success("LDA model is voltooid!")
@@ -201,13 +239,51 @@ with tab5:
                                     data=html_content,
                                     file_name="ldavis.html",
                                     mime="text/html")
-                        
+                                 
 with tab6: 
-    st.title("Over BERTopic") 
-    st.write("Hieronder komt een schematische weergave van wat een BERTopic-model is.") 
-    
-with tab7: 
-    st.title("BERTopic") 
-    st.write("Kies links de paramaters voor het trainen van het BERTopic-model. Druk rechts op trainen om het model te trainen.") 
+    st.title("Over LLM LDA") 
+    st.write("Hier komt tekst en uitleg over wat een Latent Dirichlet Allocation model is met een LLM.") 
 
+with tab7:  
+    st.title("LLM LDA") 
+    
+    # Define session states 
+    if "results_ready_llm_lda" not in st.session_state:  
+        st.session_state.results_ready_llm_lda = False 
+    if "results_file_path_llm_lda" not in st.session_state:  
+        st.session_state.results_file_path_llm_lda = None 
+    
+    if st.button("LLM LDA"): 
+        st.write("Er wordt aan gewerkt!") 
+        result = subprocess.run(["python", "LDALLM.py"], shell=True, capture_output=True, text=True)
+        if result.returncode == 0:
+            st.success("LLM LDA model is voltooid!")
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as tmp_file:
+                tmp_file.write(result.stdout.encode("utf-8"))
+                st.session_state.results_file_path = Path(tmp_file.name) 
             
+            st.session_state.results_ready_llm_lda = True 
+            
+        else: 
+            st.error("Er is een fout opgetreden bij het genereren van het LLM LDA model!")
+            st.write(result.stderr)
+            
+    if st.session_state.results_ready_llm_lda: 
+        st.write("De resultaten zijn klaar!") 
+        with open(st.session_state.results_file_path_llm_lda, "rb") as file: 
+            st.download_button(label="Klik hier om de resultaten te downloaden",
+                                data=file, 
+                                file_name="llm_lda_results.txt",
+                                mime="text/plain")   
+            
+            
+            
+    # if st.session_state.results_ready: 
+    #         st.write("De resultaten zijn klaar!") 
+    #         with open(st.session_state.results_file_path, "rb") as file: 
+    #             st.download_button(label="Klik hier om de resultaten te downloaden",
+    #                                 data=file, 
+    #                                 file_name="lda_results.txt",
+    #                                 mime="text/plain") 
+        
+    
