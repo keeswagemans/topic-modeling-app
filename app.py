@@ -16,11 +16,13 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(['Over project', 'Documenten 
 
 with tab1: 
     st.title("Topic Modeling voor het ministerie van Sociale Zaken en Werkgelegenheid")
+    st.video("video.mp4", start_time=0, loop=True) 
     text = "De modellen in deze webapp kunnen gebruikt worden om topics te modelleren uit tekstcorpora. Voordat de modellen getraind kunnen worden, dienen documenten geüpload te worden. Dit kan gedaan worden in de Documenten Manager. Na het toevoegen van de documenten kunnen de teksten geëxtraheerd worden onder hetzelfde kopje. Daarna kunnen de teksten gepreprocessed worden. In datzelfde tabblad kunnen woorden gekozen worden, die uit de tekstcorpus verwijdert dienen te worden. In Over LDA en Over BERTopic worden de modellen kort toegelicht. In de tabbladen LDA en BERTopic kunnen de parameters voor de modellen gekozen worden en kan het model getraind worden. De resultaten en visualisaties van de modellen zijn te downloaden in de respectievelijke tab."
     paragraphs = text.split("/n/n")
     for i, paragraph in enumerate(paragraphs, 1):
         st.write(paragraph)
-        
+
+      
 with tab2: 
     st.title("Documenten Manager") 
     st.write("") 
@@ -242,39 +244,90 @@ with tab5:
                                  
 with tab6: 
     st.title("Over LLM LDA") 
-    st.write("Hier komt tekst en uitleg over wat een Latent Dirichlet Allocation model is met een LLM.") 
+    st.write("Op de volgende pagina kan een LDA met een Large Language Model getraind worden. De resultaten van het model kunnen eveneens gedownload worden. Een Large Language Model draait via de Azure Cloud, dat betekent dat alleen openbare documenten in dit model kunnen worden getraind. Hier documenten ingooien die niet-openbaar zijn, leidt tot een datalek. De parameters zijn hetzelfde en die kun je op de volgende pagina ook aanpassen. Succes!") 
 
-with tab7:  
-    st.title("LLM LDA") 
+with tab7: 
+    st.title("LLM LDA")
+    st.write("LET OP: Dit model draait via de Azure Cloud. Alleen openbare documenten in dit model trainen.") 
     
-    # Define session states 
-    if "results_ready_llm_lda" not in st.session_state:  
-        st.session_state.results_ready_llm_lda = False 
-    if "results_file_path_llm_lda" not in st.session_state:  
-        st.session_state.results_file_path_llm_lda = None 
+    col1, col2 = st.columns(2) 
     
-    if st.button("LLM LDA"): 
-        st.write("Er wordt aan gewerkt!") 
-        result = subprocess.run(["python", "LDALLM.py"], shell=True, capture_output=True, text=True)
-        if result.returncode == 0:
-            st.success("LLM LDA model is voltooid!")
-            output = result.stdout   
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as tmp_file:
-                tmp_file.write(output.encode("utf-8")) 
-                st.session_state.results_file_path_llm_lda = Path(tmp_file.name)     
+    with col1: 
+        # Define form_callback 
+        def form_callback2(): 
+            # Save session state values to an external file
+            parameters = {
+                "min_cf2": min_cf_input,
+                "min_df2": min_df_input,
+                "top_words2": top_words_input,
+                "number_topics2": number_topics_input,
+                "alpha2": alpha_input,
+                "eta2": eta_input
+            }
+            with open("parameters2.json", "w") as f:
+                json.dump(parameters, f)
+        
+        # Initialize the parameters for training the LDA model
+        with st.form(key="my_form2"): 
+            min_cf_input = st.number_input(label="Minimale collectie frequentie van woorden:", min_value=0, max_value=10000, value=0, key="min_cf2") 
+            min_df_input = st.number_input(label="Minimale documentfrequentie van woorden:", min_value=0, max_value=10000, value=0, key="min_df2") 
+            top_words_input = st.number_input(label="Aantal te verwijderen 'top-woorden:", min_value=0, max_value=10000, value=5, key="top_words2") 
+            number_topics_input = st.number_input(label=' K (het aantal topics)', min_value=1, max_value=20, value=20, key="number_topics2") 
+            alpha_input = st.radio("Alpha:", ["symmetric", "asymmetric"], key="alpha2") 
+            eta_input = st.slider("Eta:", min_value=0.0, max_value=1.0, value=0.5, step=0.1, key="eta2") 
+            submit_button = st.form_submit_button(label="Leg parameters vast", on_click=form_callback2) 
+    
+    with col2: 
+        # Define session states 
+        if "results_ready_llm_lda" not in st.session_state:  
+            st.session_state.results_ready_llm_lda = False 
+        if "results_file_path_llm_lda" not in st.session_state:  
+            st.session_state.results_file_path_llm_lda = None 
+        if "visualization_file_path_llm_lda" not in st.session_state:   
+            st.session_state.visualization_file_path_llm_lda = None 
+        
+        # Verkrijg resultaten en visualisatie    
+        if st.button("Verkrijg resultaten en visualisatie van het lDA-model met een Large Language Model!"): 
+            st.write("De resultaten en de visualisatie verschijnen in een klikbare link.")   
+            result = subprocess.run(["python", "LDALLM.py"], shell=True, capture_output=True, text=True)
             
-            st.session_state.results_ready_llm_lda = True 
-            
-        else: 
-            st.error("Er is een fout opgetreden bij het genereren van het LLM LDA model!")
-            st.write(result.stderr)
-            
-    if st.session_state.results_ready_llm_lda: 
-        st.write("De resultaten zijn klaar!") 
-        with open(st.session_state.results_file_path_llm_lda, "rb") as file: 
-            st.download_button(label="Klik hier om de resultaten te downloaden",
-                                data=file, 
-                                file_name="llm_lda_results.txt",
-                                mime="text/plain")   
+            if result.returncode == 0:
+                st.success("LLM LDA model is voltooid!")
+                output = result.stdout   
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as tmp_file:
+                    tmp_file.write(output.encode("utf-8")) 
+                    st.session_state.results_file_path_llm_lda = Path(tmp_file.name)     
+                
+                st.session_state.results_ready_llm_lda = True 
+                
+                st.write("De visualisatie wordt gegenereerd...")
+                result_visualization_llm = subprocess.run(["python", "visualization.py"], shell=True, capture_output=True, text=True) 
                   
-    
+                # Visualization section
+                if result_visualization_llm.returncode == 0:
+                    st.success("Resultaten en visualisatie zijn voltooid!")
+                    st.session_state.visualization_file_path_llm_lda = "models/ldavis_llm.html" 
+                else:
+                    st.error("Er is een fout opgetreden bij het genereren van de visualisatie!") 
+                    st.write(result_visualization_llm.stderr) 
+            else: 
+                st.error("Er is een fout opgetreden bij het genereren van de resultaten en de visualisatie!")
+                st.write(result.stderr) 
+                    
+        if st.session_state.results_ready_llm_lda: 
+            st.write("De resultaten zijn klaar!") 
+            with open(st.session_state.results_file_path_llm_lda, "rb") as file: 
+                st.download_button(label="Klik hier om de resultaten te downloaden",
+                                    data=file, 
+                                    file_name="llm_lda_results.txt",
+                                    mime="text/plain")  
+            
+            if st.session_state.visualization_file_path_llm_lda: 
+                with open(st.session_state.visualization_file_path_llm_lda, "r") as file:
+                    html_content = file.read()
+                    
+                st.download_button(label="Klik om de visualisatie te downloaden",
+                                    data=html_content,
+                                    file_name="ldavis_llm.html",
+                                    mime="text/html")
+        

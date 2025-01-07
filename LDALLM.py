@@ -22,12 +22,12 @@ logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 
 # Import variables 
 parameters = json.load(open("parameters.json"))  
-min_cf = parameters["min_cf"]    
-min_df = parameters["min_df"]   
-top_words = parameters["top_words"] 
-number_topics = parameters["number_topics"] 
-alpha = parameters["alpha"]  
-eta = parameters["eta"] 
+min_cf = parameters["min_cf2"]   
+min_df = parameters["min_df2"]  
+top_words = parameters["top_words2"]
+number_topics = parameters["number_topics2"]
+alpha = parameters["alpha2"]
+eta = parameters["eta2"]
 
 
 class LDALLM(): 
