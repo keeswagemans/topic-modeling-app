@@ -283,8 +283,8 @@ with tab7:
             st.session_state.results_ready_llm_lda = False 
         if "results_file_path_llm_lda" not in st.session_state:  
             st.session_state.results_file_path_llm_lda = None 
-        if "visualization_file_path_llm_lda" not in st.session_state:   
-            st.session_state.visualization_file_path_llm_lda = None 
+        # if "visualization_file_path_llm_lda" not in st.session_state:   
+        #     st.session_state.visualization_file_path_llm_lda = None 
         
         # Verkrijg resultaten en visualisatie    
         if st.button("Verkrijg resultaten en visualisatie van het lDA-model met een Large Language Model!"): 
@@ -300,16 +300,16 @@ with tab7:
                 
                 st.session_state.results_ready_llm_lda = True 
                 
-                st.write("De visualisatie wordt gegenereerd...")
-                result_visualization_llm = subprocess.run(["python", "visualization.py"], shell=True, capture_output=True, text=True) 
+                # st.write("De visualisatie wordt gegenereerd...")
+                result_visualization_llm = subprocess.run(["python", "visualization_llm.py"], shell=True, capture_output=True, text=True) 
                   
                 # Visualization section
-                if result_visualization_llm.returncode == 0:
-                    st.success("Resultaten en visualisatie zijn voltooid!")
-                    st.session_state.visualization_file_path_llm_lda = "models/ldavis_llm.html" 
-                else:
-                    st.error("Er is een fout opgetreden bij het genereren van de visualisatie!") 
-                    st.write(result_visualization_llm.stderr) 
+                # if result_visualization_llm.returncode == 0:
+                #     st.success("Resultaten en visualisatie zijn voltooid!")
+                #     st.session_state.visualization_file_path_llm_lda = "models/ldavis_llm.html" 
+                # else:
+                #     st.error("Er is een fout opgetreden bij het genereren van de visualisatie!") 
+                #     st.write(result_visualization_llm.stderr) 
             else: 
                 st.error("Er is een fout opgetreden bij het genereren van de resultaten en de visualisatie!")
                 st.write(result.stderr) 
@@ -322,12 +322,12 @@ with tab7:
                                     file_name="llm_lda_results.txt",
                                     mime="text/plain")  
             
-            if st.session_state.visualization_file_path_llm_lda: 
-                with open(st.session_state.visualization_file_path_llm_lda, "r") as file:
-                    html_content = file.read()
+            # if st.session_state.visualization_file_path_llm_lda: 
+            #     with open(st.session_state.visualization_file_path_llm_lda, "r") as file:
+            #         html_content = file.read()
                     
-                st.download_button(label="Klik om de visualisatie te downloaden",
-                                    data=html_content,
-                                    file_name="ldavis_llm.html",
-                                    mime="text/html")
+            #     st.download_button(label="Klik om de visualisatie te downloaden",
+            #                         data=html_content,
+            #                         file_name="ldavis_llm.html",
+            #                         mime="text/html")
         

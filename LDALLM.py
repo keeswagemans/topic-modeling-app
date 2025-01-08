@@ -21,14 +21,13 @@ logging.basicConfig(
 logging.getLogger().addHandler(logging.StreamHandler(sys.stdout)) 
 
 # Import variables 
-parameters = json.load(open("parameters.json"))  
+parameters = json.load(open("parameters2.json")) 
 min_cf = parameters["min_cf2"]   
 min_df = parameters["min_df2"]  
 top_words = parameters["top_words2"]
 number_topics = parameters["number_topics2"]
 alpha = parameters["alpha2"]
 eta = parameters["eta2"]
-
 
 class LDALLM(): 
     
@@ -58,6 +57,8 @@ class LDALLM():
             mdl.add_doc(words)   
         
         mdl.train(10000, show_progress=True)
+        
+        mdl.save("models/lda_model_llm.bin", True) 
 
         # Retrieve the topics and their corresponding words 
         topics_ls = []
@@ -69,7 +70,7 @@ class LDALLM():
         return topics_ls 
     
     @staticmethod  
-    def topics_llm(llm, input_dict,min_cf, min_df, rm_top=top_words, k=number_topics, eta=eta, corpus=corpus): 
+    def topics_llm(llm, input_dict, min_cf, min_df, rm_top=top_words, k=number_topics, eta=eta, corpus=corpus): 
         
         list_of_topicwords = LDALLM.LDA(input_dict, corpus, min_cf, min_df, top_words, number_topics, eta)
         
@@ -101,6 +102,31 @@ class LDALLM():
         - <<<(Frase die het derde subthema beschrijft)>>>
 
         Lijsten: """{string_lda}"""
+        '''
+        
+        template_string2 = '''
+        Beschrijf het onderwerp van elk van de {num_topics} dubbel aanhalingstekens omgeven lijsten met een woord en schrijf daarnaast vier woorden die de verschillende subthema's beschrijven. De woorden zijn het resultaat van een algoritme voor het ontdekken van onderwerpen. 
+        Geef geen introductie of conclusie, beschrijf alleen de onderwerpen. Vermeld het woord "onderwerp" niet bij het beschrijven van de onderwerpen.  
+        Gebruik het volgende sjabloon voor de reactie. 
+        
+        1: <<<(woord dat het onderwerp beschrijft)>>>
+        - <<<(woord dat het eerste subthema beschrijft)>>>
+        - <<<(woord dat het tweede subthema beschrijft)>>>
+        - <<<(woord dat het derde subthema beschrijft)>>>
+        
+        2: <<<(woord dat het onderwerp beschrijft)>>>   
+        - <<<(woord dat het eerste subthema beschrijft)>>>
+        - <<<(woord dat het tweede subthema beschrijft)>>>
+        - <<<(woord dat het derde subthema beschrijft)>>>
+        
+        ...
+        
+        n: <<<(woord dat het onderwerp beschrijft)>>>
+        - <<<(woord dat het eerste subthema beschrijft)>>>
+        - <<<(woord dat het tweede subthema beschrijft)>>>
+        - <<<(woord dat het derde subthema beschrijft)>>>
+        
+        Woorden: """{string_lda}"""  
         '''
 
 
@@ -134,5 +160,6 @@ dictionary = json.load(open("preprocessing/preprocessing.json"))
 data = dictionary.values()
 final_data = [item for sublist in data for item in sublist]
 corpus = LDALLM.corpus(dictionary) 
+corpus.save("models/corpus_llm.cps") 
 response = LDALLM.topics_llm(llm, dictionary, min_cf, min_df, top_words, number_topics, eta, corpus)
 print(response) 
