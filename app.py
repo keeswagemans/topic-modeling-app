@@ -2,21 +2,27 @@
 import streamlit as st
 import pandas as pd 
 import subprocess 
-from subprocess import Popen 
 import os 
 from pathlib import Path 
 import tempfile 
 import json 
+import glob 
 
 
 LOCAL_REPO_PATH = os.path.join(os.getcwd(), "documenten")
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(['Over project', 'Documenten Manager', 'Preprocessing', 'Over LDA', 'LDA', 'Over LLM LDA', 'LLM LDA']) 
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(['Over project', 
+                                                    'Documenten Manager', 
+                                                    'Preprocessing', 
+                                                    'Over LDA', 
+                                                    'LDA', 
+                                                    'Over LLM LDA', 
+                                                    'LLM LDA']) 
                                             
 
 with tab1: 
     st.title("Topic Modeling voor het ministerie van Sociale Zaken en Werkgelegenheid")
-    st.video("video.mp4", start_time=0, loop=True) 
+    st.video("media/video.mp4", start_time=0, loop=True) 
     text = "De modellen in deze webapp kunnen gebruikt worden om topics te modelleren uit tekstcorpora. Voordat de modellen getraind kunnen worden, dienen documenten geüpload te worden. Dit kan gedaan worden in de Documenten Manager. Na het toevoegen van de documenten kunnen de teksten geëxtraheerd worden onder hetzelfde kopje. Daarna kunnen de teksten gepreprocessed worden. In datzelfde tabblad kunnen woorden gekozen worden, die uit de tekstcorpus verwijdert dienen te worden. In Over LDA en Over BERTopic worden de modellen kort toegelicht. In de tabbladen LDA en BERTopic kunnen de parameters voor de modellen gekozen worden en kan het model getraind worden. De resultaten en visualisaties van de modellen zijn te downloaden in de respectievelijke tab."
     paragraphs = text.split("/n/n")
     for i, paragraph in enumerate(paragraphs, 1):
@@ -44,12 +50,18 @@ with tab2:
     # Create a two-column layout
     col1, col2 = st.columns(2)
 
+    # Set variables 
+    if "uploader_key" not in st.session_state: 
+        st.session_state.uploader_key = 0 
+        
+    
     # Button to get list of documents in the repository
     with col1:
-            uploaded_files = st.file_uploader("Kies een PDF of DOCX bestand.", type=["pdf", "docx"], accept_multiple_files=True)   
+            uploaded_files = st.file_uploader("Kies een PDF of DOCX bestand.", type=["pdf", "docx"], accept_multiple_files=True, key=f"uploader_{st.session_state.uploader_key}")   
+               
 
             if uploaded_files:
-                if st.button("Documenten uploaden en teksten extraheren"): 
+                if st.button("Documenten uploaden"): 
                     for uploaded_file in uploaded_files: 
                         try:
                             save_path = os.path.join("documenten/", uploaded_file.name)
@@ -60,14 +72,11 @@ with tab2:
                         except Exception as e:
                             st.error(f"Er is een fout opgetreden met {uploaded_file.name}: {e}.")
                 
-                    try:
-                        result = subprocess.run(["python", "extracttext.py"], capture_output=True, text=True)
-                        st.success("Documenten succesvol geupload en teksten succesvol geëxtraheerd uit bestanden.")
-                        st.code(result.stdout)
-                    except Exception as e:
-                        st.error(f"Fout bij extraheren teksten: {e}.") 
-            
     with col2:  
+        if st.button("Extraheer teksten uit bestanden"):
+            result = subprocess.run(["python", "src/extracttext.py"])
+            st.success("Teksten succesvol geëxtraheerd uit bestanden.")
+            
         if st.button("Verkrijg lijst van de documenten in de map"):
             # List the files in the local repository
             documents = os.listdir(LOCAL_REPO_PATH)
@@ -84,14 +93,14 @@ with tab2:
                     st.markdown(document)   
             else:
                 st.write("Nog geen documenten in de map gevonden.")
+                
+        if st.button("Verwijder alle bestanden bestanden"):
+            files = glob.glob('documenten/*')
+            for file in files: 
+                os.remove(file)  
             
-        if st.button("Extraheer teksten uit bestanden"):
-            result = subprocess.run(["python", "extracttext.py"])
-            st.success("Teksten succesvol geëxtraheerd uit bestanden.")
-            # st.code(result.stdout) 
 
-        
-with tab3: 
+with tab3:
     st.title("Preprocessing")
     st.write("Links kun je woorden intikken om te verwijderen, druk op enter en klik vervolgens op de knop 'Verwijder woorden' rechts. Wil je geen woorden verwijderen, druk dan gelijk op de knop 'Preprocessing'. Eerst preprocessen voodat je woorden verwijdert, is raadzaam.")
     col1, col2 = st.columns(2)
@@ -117,7 +126,7 @@ with tab3:
         if st.button("Preprocessing"): 
             st.write("Er wordt aan gewerkt!")
            
-            result = subprocess.run(["python", "preprocess.py"], shell=True, capture_output=True, text=True)
+            result = subprocess.run(["python", "src/preprocess.py"], shell=True, capture_output=True, text=True)
             if result.returncode == 0:
                 st.success("Preprocessing voltooid!")
             else:
@@ -129,7 +138,7 @@ with tab3:
             if words_to_remove: 
                 words_to_remove = [word.lower() for word in words_to_remove] 
                 json.dump(words_to_remove, open("preprocessing/words_to_remove.json", "w")) 
-                result = subprocess.run(["python", "remove_words.py"], capture_output=True, text=True)
+                result = subprocess.run(["python", "src/remove_words.py"], capture_output=True, text=True)
                 st.write("Woorden uit tekstcorpus gehaald")
             else: 
                 st.write("Er zijn geen woorden om te verwijderen.")
@@ -164,41 +173,44 @@ with tab5:
     with col1: 
         # Define form_callback 
         def form_callback():
-            # Save session state values to an external file
+            # Store variables in dictionary 
             parameters = {
                 "min_cf": min_cf_input,
                 "min_df": min_df_input,
                 "top_words": top_words_input,
                 "number_topics": number_topics_input,
-                "alpha": alpha_input,
+                "alpha_input": alpha_input,
                 "eta": eta_input
             }
-            with open("parameters.json", "w") as f:
+            
+            with open("parameters/parameters.json", "w") as f: 
                 json.dump(parameters, f)
-        
+                        
         # Initialize the parameters for training the LDA model
         with st.form(key="my_form"):
-            min_cf_input = st.number_input(label="Minimale collectie frequentie van woorden:", min_value=0, max_value=10000, value=0, key="min_cf")
-            min_df_input = st.number_input(label="Minimale documentfrequentie van woorden:", min_value=0, max_value=10000, value=0, key="min_df")  
-            top_words_input = st.number_input(label="Aantal te verwijderen 'top-woorden:", min_value=0, max_value=10000, value=5, key="top_words") 
-            number_topics_input = st.number_input(label=' K (het aantal topics)', min_value=1, max_value=20, value=20, key="number_topics")
-            alpha_input = st.radio("Alpha:", ["symmetric", "asymmetric"], key="alpha")  
-            eta_input = st.slider("Eta:", min_value=0.0, max_value=1.0, value=0.5, step=0.1, key="eta") 
+            min_cf_input = st.number_input(label="Minimale collectie frequentie van woorden:", min_value=0, max_value=10000, key="min_cf")
+            min_df_input = st.number_input(label="Minimale documentfrequentie van woorden:", min_value=0, max_value=10000, key="min_df")  
+            top_words_input = st.number_input(label="Aantal te verwijderen 'top-woorden:", min_value=0, max_value=10000, key="top_words") 
+            number_topics_input = st.number_input(label="K (het aantal topics)", min_value=1, max_value=20, key="number_topics")
+            alpha_input = st.text_input("Enter symmetric alpha or asymmetric alpha:")
+            eta_input = st.slider("Eta:", min_value=0.1, max_value=1.0, step=0.1, key="eta") 
             submit_button = st.form_submit_button(label="Leg parameters vast", on_click=form_callback)
+            if submit_button:
+                st.write("Parameters vastgelegd!") 
     
     with col2:  
         # Initialize the state variables and initialize the button for results and visualization   
         if "results_ready" not in st.session_state:
             st.session_state.results_ready = False   
         if "results_file_path" not in st.session_state:  
-            st.session_state.results_file_path = None
+            st.session_state.results_file_path = False
         if "visualization_file_path" not in st.session_state:   
-            st.session_state.visualization_file_path = None 
+            st.session_state.visualization_file_path = False
             
         # Verkrijg resultaten en visualisatie 
         if st.button("Verkrijg resultaten en visualisatie!"):
             st.write("Het Latent Dirichlet Allocation Model is aan het trainen. De resultaten en de visualisatie verschijnen in een klikbare link.")
-            result = subprocess.run(["python", "lda.py"], shell=True, capture_output=True, text=True)
+            result = subprocess.run(["python", "src/lda.py"], shell=True, capture_output=True, text=True)
 
             if result.returncode == 0:
                 st.success("LDA model is voltooid!")
@@ -212,7 +224,7 @@ with tab5:
                 
                 st.write("De visualisatie wordt gegenereerd...")
                 
-                result_visualization = subprocess.run(["python", "visualization.py"], shell=True, capture_output=True, text=True)    
+                result_visualization = subprocess.run(["python", "src/visualization.py"], shell=True, capture_output=True, text=True)    
 
                 # Visualization section
                 if result_visualization.returncode == 0:
@@ -257,39 +269,41 @@ with tab7:
         def form_callback2(): 
             # Save session state values to an external file
             parameters = {
-                "min_cf2": min_cf_input,
-                "min_df2": min_df_input,
-                "top_words2": top_words_input,
-                "number_topics2": number_topics_input,
-                "alpha2": alpha_input,
-                "eta2": eta_input
+                "min_cf2": min_cf_input2,
+                "min_df2": min_df_input2,
+                "top_words2": top_words_input2,
+                "number_topics2": number_topics_input2,
+                "alpha2": alpha_input2,
+                "eta2": eta_input2
             }
-            with open("parameters2.json", "w") as f:
+            with open("parameters/parameters2.json", "w") as f:
                 json.dump(parameters, f)
         
         # Initialize the parameters for training the LDA model
         with st.form(key="my_form2"): 
-            min_cf_input = st.number_input(label="Minimale collectie frequentie van woorden:", min_value=0, max_value=10000, value=0, key="min_cf2") 
-            min_df_input = st.number_input(label="Minimale documentfrequentie van woorden:", min_value=0, max_value=10000, value=0, key="min_df2") 
-            top_words_input = st.number_input(label="Aantal te verwijderen 'top-woorden:", min_value=0, max_value=10000, value=5, key="top_words2") 
-            number_topics_input = st.number_input(label=' K (het aantal topics)', min_value=1, max_value=20, value=20, key="number_topics2") 
-            alpha_input = st.radio("Alpha:", ["symmetric", "asymmetric"], key="alpha2") 
-            eta_input = st.slider("Eta:", min_value=0.0, max_value=1.0, value=0.5, step=0.1, key="eta2") 
-            submit_button = st.form_submit_button(label="Leg parameters vast", on_click=form_callback2) 
-    
+            min_cf_input2 = st.number_input(label="Minimale collectie frequentie van woorden:", min_value=0, max_value=10000, key="min_cf2")
+            min_df_input2 = st.number_input(label="Minimale documentfrequentie van woorden:", min_value=0, max_value=10000, key="min_df2")  
+            top_words_input2 = st.number_input(label="Aantal te verwijderen 'top-woorden:", min_value=0, max_value=10000, key="top_words2") 
+            number_topics_input2 = st.number_input(label="K (het aantal topics)", min_value=1, max_value=20, key="number_topics2")
+            alpha_input2 = st.text_input("Enter symmetric alpha or asymmetric alpha:")
+            eta_input2 = st.slider("Eta:", min_value=0.1, max_value=1.0, step=0.1, key="eta2") 
+            submit_button2 = st.form_submit_button(label="Leg parameters vast", on_click=form_callback2)
+            if submit_button2:
+                st.write("Parameters vastgelegd!") 
+                
     with col2: 
         # Define session states 
         if "results_ready_llm_lda" not in st.session_state:  
             st.session_state.results_ready_llm_lda = False 
         if "results_file_path_llm_lda" not in st.session_state:  
             st.session_state.results_file_path_llm_lda = None 
-        # if "visualization_file_path_llm_lda" not in st.session_state:   
-        #     st.session_state.visualization_file_path_llm_lda = None 
+        if "visualization_file_path_llm_lda" not in st.session_state:   
+            st.session_state.visualization_file_path_llm_lda = None 
         
         # Verkrijg resultaten en visualisatie    
         if st.button("Verkrijg resultaten en visualisatie van het lDA-model met een Large Language Model!"): 
             st.write("De resultaten en de visualisatie verschijnen in een klikbare link.")   
-            result = subprocess.run(["python", "LDALLM.py"], shell=True, capture_output=True, text=True)
+            result = subprocess.run(["python", "src/LDALLM.py"], shell=True, capture_output=True, text=True)
             
             if result.returncode == 0:
                 st.success("LLM LDA model is voltooid!")
@@ -300,16 +314,16 @@ with tab7:
                 
                 st.session_state.results_ready_llm_lda = True 
                 
-                # st.write("De visualisatie wordt gegenereerd...")
-                result_visualization_llm = subprocess.run(["python", "visualization_llm.py"], shell=True, capture_output=True, text=True) 
+                st.write("De visualisatie wordt gegenereerd...")
+                result_visualization_llm = subprocess.run(["python", "src/visualization_llm.py"], shell=True, capture_output=True, text=True) 
                   
                 # Visualization section
-                # if result_visualization_llm.returncode == 0:
-                #     st.success("Resultaten en visualisatie zijn voltooid!")
-                #     st.session_state.visualization_file_path_llm_lda = "models/ldavis_llm.html" 
-                # else:
-                #     st.error("Er is een fout opgetreden bij het genereren van de visualisatie!") 
-                #     st.write(result_visualization_llm.stderr) 
+                if result_visualization_llm.returncode == 0:
+                    st.success("Resultaten en visualisatie zijn voltooid!")
+                    st.session_state.visualization_file_path_llm_lda = "models/ldavis_llm.html" 
+                else:
+                    st.error("Er is een fout opgetreden bij het genereren van de visualisatie!") 
+                    st.write(result_visualization_llm.stderr) 
             else: 
                 st.error("Er is een fout opgetreden bij het genereren van de resultaten en de visualisatie!")
                 st.write(result.stderr) 
@@ -322,12 +336,12 @@ with tab7:
                                     file_name="llm_lda_results.txt",
                                     mime="text/plain")  
             
-            # if st.session_state.visualization_file_path_llm_lda: 
-            #     with open(st.session_state.visualization_file_path_llm_lda, "r") as file:
-            #         html_content = file.read()
+            if st.session_state.visualization_file_path_llm_lda: 
+                with open(st.session_state.visualization_file_path_llm_lda, "r") as file:
+                    html_content_llm = file.read()
                     
-            #     st.download_button(label="Klik om de visualisatie te downloaden",
-            #                         data=html_content,
-            #                         file_name="ldavis_llm.html",
-            #                         mime="text/html")
+                st.download_button(label="Klik om de visualisatie te downloaden",
+                                    data=html_content_llm,
+                                    file_name="ldavis_llm.html",
+                                    mime="text/html")
         

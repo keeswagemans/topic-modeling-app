@@ -4,15 +4,13 @@ import pyLDAvis
 
 
 class Visualize: 
-
-
     @staticmethod 
     def visualization(): 
         # Load corpus 
-        corpus = tp.utils.Corpus.load('models/corpus.cps')
+        corpus = tp.utils.Corpus.load('models/corpus_llm.cps') 
 
         #Load model 
-        mdl = tp.LDAModel.load('models/lda_model.bin')   
+        mdl = tp.LDAModel.load('models/lda_model_llm.bin')   
 
         # Print summary 
         print('Num docs:{}, Num Vocabs:{}, Total Words:{}'.format(
@@ -36,11 +34,12 @@ class Visualize:
             vocab, 
             term_frequency,
             start_index=0, # tomotopy starts topic ids with 0, pyLDAvis with 1
-            sort_topics=False # IMPORTANT: otherwise the topic_ids between pyLDAvis and tomotopy are not matching!
+            sort_topics=False, # IMPORTANT: otherwise the topic_ids between pyLDAvis and tomotopy are not matching!
+            mds='mmds'
         )
         
         # Visualize 
-        pyLDAvis.save_html(prepared_data, 'models/ldavis.html')
+        pyLDAvis.save_html(prepared_data, 'models/ldavis_llm.html')
         # pyLDAvis.show(prepared_data, local=False)
  
 # Call the function         

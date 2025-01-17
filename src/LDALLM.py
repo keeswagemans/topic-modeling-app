@@ -10,7 +10,6 @@ from langchain.chat_models import AzureChatOpenAI
 
 from llama_index.llms.azure_openai import AzureOpenAI    
 from llama_index.embeddings.azure_openai import AzureOpenAIEmbedding 
-# from llama_index.core import VectorStoreIndex, SimpleDirectoryReading
 import logging 
 import sys 
 
@@ -21,13 +20,22 @@ logging.basicConfig(
 logging.getLogger().addHandler(logging.StreamHandler(sys.stdout)) 
 
 # Import variables 
-parameters = json.load(open("parameters2.json")) 
+parameters = json.load(open("parameters/parameters2.json")) 
 min_cf = parameters["min_cf2"]   
 min_df = parameters["min_df2"]  
 top_words = parameters["top_words2"]
 number_topics = parameters["number_topics2"]
-alpha = parameters["alpha2"]
+alpha_raw = parameters["alpha2"]
 eta = parameters["eta2"]
+
+def change_alpha(alpha_raw): 
+    if "," in alpha_raw: 
+        alpha = [float(x.strip()) for x in alpha_raw.split(",")]
+    else:
+        alpha = float(alpha_raw)
+    return alpha 
+
+alpha = change_alpha(alpha_raw)
 
 class LDALLM(): 
     
