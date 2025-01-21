@@ -1,6 +1,7 @@
 # Import libraries 
 import streamlit as st
 import pandas as pd 
+from PIL import Image 
 import subprocess 
 import os 
 from pathlib import Path 
@@ -17,12 +18,25 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(['Over project',
                                                     'Over LDA', 
                                                     'LDA', 
                                                     'Over LLM LDA', 
-                                                    'LLM LDA']) 
-                                            
+                                                    'LLM LDA'])
 
+custom_css = """
+<style>
+    .custom-box {
+        background-color: #154273; 
+        color: #FFFFFF;
+        padding: 10px; 
+        border-radius: 5px; 
+        text-align: center; 
+    }
+</style> 
+""" 
+                                            
 with tab1: 
+    st.markdown(custom_css, unsafe_allow_html=True)
     st.title("Topic Modeling voor het ministerie van Sociale Zaken en Werkgelegenheid")
-    st.video("media/video.mp4", start_time=0, loop=True) 
+    st.image("media/Gemini_Generated_Image_z5i16oz5i16oz5i1.jpg")
+    st.markdown(custom_css, unsafe_allow_html=True)
     text = "De modellen in deze webapp kunnen gebruikt worden om topics te modelleren uit tekstcorpora. Voordat de modellen getraind kunnen worden, dienen documenten geüpload te worden. Dit kan gedaan worden in de Documenten Manager. Na het toevoegen van de documenten kunnen de teksten geëxtraheerd worden onder hetzelfde kopje. Daarna kunnen de teksten gepreprocessed worden. In datzelfde tabblad kunnen woorden gekozen worden, die uit de tekstcorpus verwijdert dienen te worden. In Over LDA en Over BERTopic worden de modellen kort toegelicht. In de tabbladen LDA en BERTopic kunnen de parameters voor de modellen gekozen worden en kan het model getraind worden. De resultaten en visualisaties van de modellen zijn te downloaden in de respectievelijke tab."
     paragraphs = text.split("/n/n")
     for i, paragraph in enumerate(paragraphs, 1):
@@ -31,19 +45,8 @@ with tab1:
       
 with tab2: 
     st.title("Documenten Manager") 
-    st.write("") 
         
-    st.markdown("""
-            <style>
-            .stButton>button
-                    {
-            width: 340px;
-            background-color: #01689b; 
-            color: white; 
-            margin: 0 auto; 
-            }
-            </style>
-            """, unsafe_allow_html=True)
+    st.markdown(custom_css, unsafe_allow_html=True)
 
     os.makedirs(LOCAL_REPO_PATH, exist_ok=True)  # Ensure the directory exists
 
@@ -193,7 +196,7 @@ with tab5:
             top_words_input = st.number_input(label="Aantal te verwijderen 'top-woorden:", min_value=0, max_value=10000, key="top_words") 
             number_topics_input = st.number_input(label="K (het aantal topics)", min_value=1, max_value=20, key="number_topics")
             alpha_input = st.text_input("Enter symmetric alpha or asymmetric alpha:")
-            eta_input = st.slider("Eta:", min_value=0.1, max_value=1.0, step=0.1, key="eta") 
+            eta_input = st.slider("Eta:", min_value=0.0, max_value=1.0, step=0.1, key="eta") 
             submit_button = st.form_submit_button(label="Leg parameters vast", on_click=form_callback)
             if submit_button:
                 st.write("Parameters vastgelegd!") 
