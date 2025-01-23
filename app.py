@@ -12,13 +12,15 @@ import glob
 
 LOCAL_REPO_PATH = os.path.join(os.getcwd(), "documenten")
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(['Over project', 
-                                                    'Documenten Manager', 
-                                                    'Preprocessing', 
-                                                    'Over LDA', 
-                                                    'LDA', 
-                                                    'Over LLM LDA', 
-                                                    'LLM LDA'])
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 =  st.tabs(['Over project', 
+                                                        'Documenten', 
+                                                        'Preprocessing', 
+                                                        'Over LDA', 
+                                                        'LDA', 
+                                                        'Over LLM LDA', 
+                                                        'LLM LDA',
+                                                        'Over BERTopic', 
+                                                        'BERTopic'])
 
 custom_css = """
 <style>
@@ -36,7 +38,6 @@ with tab1:
     st.markdown(custom_css, unsafe_allow_html=True)
     st.title("Topic Modeling voor het ministerie van Sociale Zaken en Werkgelegenheid")
     st.image("media/Gemini_Generated_Image_z5i16oz5i16oz5i1.jpg")
-    st.markdown(custom_css, unsafe_allow_html=True)
     text = "De modellen in deze webapp kunnen gebruikt worden om topics te modelleren uit tekstcorpora. Voordat de modellen getraind kunnen worden, dienen documenten geüpload te worden. Dit kan gedaan worden in de Documenten Manager. Na het toevoegen van de documenten kunnen de teksten geëxtraheerd worden onder hetzelfde kopje. Daarna kunnen de teksten gepreprocessed worden. In datzelfde tabblad kunnen woorden gekozen worden, die uit de tekstcorpus verwijdert dienen te worden. In Over LDA en Over BERTopic worden de modellen kort toegelicht. In de tabbladen LDA en BERTopic kunnen de parameters voor de modellen gekozen worden en kan het model getraind worden. De resultaten en visualisaties van de modellen zijn te downloaden in de respectievelijke tab."
     paragraphs = text.split("/n/n")
     for i, paragraph in enumerate(paragraphs, 1):
@@ -44,10 +45,9 @@ with tab1:
 
       
 with tab2: 
+    st.markdown(custom_css, unsafe_allow_html=True) 
     st.title("Documenten Manager") 
         
-    st.markdown(custom_css, unsafe_allow_html=True)
-
     os.makedirs(LOCAL_REPO_PATH, exist_ok=True)  # Ensure the directory exists
 
     # Create a two-column layout
@@ -348,3 +348,45 @@ with tab7:
                                     file_name="ldavis_llm.html",
                                     mime="text/html")
         
+with tab8:
+    st.title("Over BERTopic")
+    st.write("Hieronder een korte uitleg over het model BERTopic.") 
+
+with tab9:
+    if "results_file_path_bertopic" not in st.session_state:    
+        st.session_state.results_file_path_bertopic = None 
+    if "results_ready_bertopic" not in st.session_state:     
+        st.session_state.results_ready_bertopic = False  
+    
+    st.title("BERTopic")
+    st.write("Druk hieronder op de knop om het model te laten lopen.")
+    
+    if st.button("Train BERTopic model"): 
+        st.write("Het BERTopic model is op dit moment bezig.") 
+        
+        result = subprocess.run(["python", "src/BERTopic.py"], shell=True, capture_output=True, text=True) 
+        
+        if result.returncode == 0: 
+            st.success("BERTopic model is voltooid!")
+            output = result.stdout 
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as tmp_file:
+                tmp_file.write(output.encode("utf-8")) 
+                st.session_state.results_file_path_bertopic = Path(tmp_file.name) 
+            
+            st.session_state.results_ready_bertopic = True 
+            
+        else: 
+            st.error("Er is een fout opgetreden!") 
+            st.write(result.stderr) 
+    
+    if st.session_state.results_ready_bertopic: 
+        st.write("De resultaten zijn klaar!")    
+        with open(st.session_state.results_file_path_bertopic, "rb") as file:    
+            st.download_button(label="Klik hier om de resultaten te downloaden", 
+                                data=file, 
+                                file_name="bertopic_results.txt", 
+                                mime="text/plain") 
+                    
+
+        
+      

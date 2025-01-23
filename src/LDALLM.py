@@ -28,18 +28,33 @@ number_topics = parameters["number_topics2"]
 alpha_raw = parameters["alpha2"]
 eta = parameters["eta2"]
 
-def change_alpha(alpha_raw): 
-    if "," in alpha_raw: 
-        alpha = [float(x.strip()) for x in alpha_raw.split(",")]
-    else:
-        alpha = float(alpha_raw)
-    return alpha 
+# def change_alpha(alpha_raw): 
+#     if "," in alpha_raw: 
+#         alpha = [float(x.strip()) for x in alpha_raw.split(",")]
+#     else:
+#         alpha = float(alpha_raw)
+#     return alpha 
 
-alpha = change_alpha(alpha_raw)
+# alpha = change_alpha(alpha_raw)
 
-class LDALLM(): 
+class LDALLM():
     
-    @staticmethod 
+    def __init__(self, data, min_cf, min_df, top_words, number_topics, eta): 
+        self.data = data 
+        self.min_cf = min_cf
+        self.min_df = min_df
+        self.top_words = top_words
+        self.number_topics = number_topics 
+        # self.alpha_raw = alpha_raw 
+        self.eta = eta 
+        
+    def change_alpha(alpha_raw): 
+        if "," in alpha_raw:
+            alpha = [float(x.strip()) for x in alpha_raw.split(",")]
+        else:
+            alpha = float(alpha_raw)
+        return alpha 
+    
     def corpus(data): 
         
         """
@@ -52,14 +67,13 @@ class LDALLM():
         
         return corpus 
     
-    @staticmethod 
     def LDA(input_dict, corpus, min_cf, min_df, top_words, number_topics, eta): 
         
         """
         This function trains an LDA model on the data and saves the model to the specified path. 
         
         """
-        mdl = tp.LDAModel(tw=tp.TermWeight.ONE, min_cf=min_cf, min_df=min_df, rm_top=top_words, k=number_topics, eta=eta, corpus=corpus) # Add alpha as parameter 
+        mdl = tp.LDAModel(tw=tp.TermWeight.ONE, min_cf=min_cf, min_df=min_df, rm_top=top_words, k=number_topics, eta=eta, corpus=corpus) 
         
         for pdf, words in input_dict.items():
             mdl.add_doc(words)   
@@ -77,7 +91,6 @@ class LDALLM():
         
         return topics_ls 
     
-    @staticmethod  
     def topics_llm(llm, input_dict, min_cf, min_df, rm_top=top_words, k=number_topics, eta=eta, corpus=corpus): 
         
         list_of_topicwords = LDALLM.LDA(input_dict, corpus, min_cf, min_df, top_words, number_topics, eta)
@@ -88,61 +101,161 @@ class LDALLM():
             
         # Create the template
         template_string = '''
-        Beschrijf het onderwerp van elk van de {num_topics} dubbel aanhalingstekens omgeven lijsten in een eenvoudige zin en schrijf daarnaast drie mogelijke verschillende subthema's op. De lijsten zijn het resultaat van een algoritme voor het ontdekken van onderwerpen.  
+        Beschrijf het onderwerp van elk van de {num_topics} dubbel aanhalingstekens omgeven lijsten in een eenvoudige zin en schrijf daarnaast drie mogelijke verschillende subonderwerp's op. De lijsten zijn het resultaat van een algoritme voor het ontdekken van onderwerpen.  
         Geef geen introductie of conclusie, beschrijf alleen de onderwerpen. Vermeld het woord "onderwerp" niet bij het beschrijven van de onderwerpen.  
         Gebruik het volgende sjabloon voor de reactie.  
 
         1: <<<(zin die het onderwerp beschrijft)>>>
-        - <<<(Frase die het eerste subthema beschrijft)>>>
-        - <<<(Frase die het tweede subthema beschrijft)>>>
-        - <<<(Frase die het derde subthema beschrijft)>>>
+        - <<<(Frase die het eerste subonderwerp beschrijft)>>>
+        - <<<(Frase die het tweede subonderwerp beschrijft)>>>
+        - <<<(Frase die het derde subonderwerp beschrijft)>>>
 
         2: <<<(zin die het onderwerp beschrijft)>>>
-        - <<<(Frase die het eerste subthema beschrijft)>>>
-        - <<<(Frase die het tweede subthema beschrijft)>>>
-        - <<<(Frase die het derde subthema beschrijft)>>>
+        - <<<(Frase die het eerste subonderwerp beschrijft)>>>
+        - <<<(Frase die het tweede subonderwerp beschrijft)>>>
+        - <<<(Frase die het derde subonderwerp beschrijft)>>>
 
         ...
 
         n: <<<(zin die het onderwerp beschrijft)>>>
-        - <<<(Frase die het eerste subthema beschrijft)>>>
-        - <<<(Frase die het tweede subthema beschrijft)>>>
-        - <<<(Frase die het derde subthema beschrijft)>>>
+        - <<<(Frase die het eerste subonderwerp beschrijft)>>>
+        - <<<(Frase die het tweede subonderwerp beschrijft)>>>
+        - <<<(Frase die het derde subonderwerp beschrijft)>>>
 
         Lijsten: """{string_lda}"""
         '''
         
         template_string2 = '''
-        Beschrijf het onderwerp van elk van de {num_topics} dubbel aanhalingstekens omgeven lijsten met een woord en schrijf daarnaast vier woorden die de verschillende subthema's beschrijven. De woorden zijn het resultaat van een algoritme voor het ontdekken van onderwerpen. 
+        Beschrijf het onderwerp van elk van de {num_topics} dubbel aanhalingstekens omgeven lijsten met een woord en schrijf daarnaast vier woorden die de verschillende subonderwerp's beschrijven. De woorden zijn het resultaat van een algoritme voor het ontdekken van onderwerpen. 
         Geef geen introductie of conclusie, beschrijf alleen de onderwerpen. Vermeld het woord "onderwerp" niet bij het beschrijven van de onderwerpen.  
         Gebruik het volgende sjabloon voor de reactie. 
         
         1: <<<(woord dat het onderwerp beschrijft)>>>
-        - <<<(woord dat het eerste subthema beschrijft)>>>
-        - <<<(woord dat het tweede subthema beschrijft)>>>
-        - <<<(woord dat het derde subthema beschrijft)>>>
+        - <<<(woord dat het eerste subonderwerp beschrijft)>>>
+        - <<<(woord dat het tweede subonderwerp beschrijft)>>>
+        - <<<(woord dat het derde subonderwerp beschrijft)>>>
         
         2: <<<(woord dat het onderwerp beschrijft)>>>   
-        - <<<(woord dat het eerste subthema beschrijft)>>>
-        - <<<(woord dat het tweede subthema beschrijft)>>>
-        - <<<(woord dat het derde subthema beschrijft)>>>
+        - <<<(woord dat het eerste subonderwerp beschrijft)>>>
+        - <<<(woord dat het tweede subonderwerp beschrijft)>>>
+        - <<<(woord dat het derde subonderwerp beschrijft)>>>
         
         ...
         
         n: <<<(woord dat het onderwerp beschrijft)>>>
-        - <<<(woord dat het eerste subthema beschrijft)>>>
-        - <<<(woord dat het tweede subthema beschrijft)>>>
-        - <<<(woord dat het derde subthema beschrijft)>>>
+        - <<<(woord dat het eerste subonderwerp beschrijft)>>>
+        - <<<(woord dat het tweede subonderwerp beschrijft)>>>
+        - <<<(woord dat het derde subonderwerp beschrijft)>>>
         
         Woorden: """{string_lda}"""  
         '''
 
+        template_string3 = """
+        Beschrijf het onderwerp van elk van de {num_topics} in een eenvoudige zin en daaronder vier zinnen zie subthema's omschrijven.
+        Vermeld het woord 'onderwerp' niet bij het omschrijven van de onderwerpen. 
+        Gebruik het volgende sjabloon voor de reactie: 
+        
+        1. Zin die het hoofdonderwerp omschrijft.
+        - Zin die het eerste subonderwerp omschrijft.
+        - Zin die het tweede subonderwerp omschrijft.
+        - Zin die het derde subonderwerp omschrijft.
+        - Zin die het vierde subonderwerp omschrijft.
+                
+        2. Zin die het hoofdonderwerp omschrijft.
+        - Zin die het eerste subonderwerp omschrijft.
+        - Zin die het tweede subonderwerp omschrijft.
+        - Zin die het derde subonderwerp omschrijft.
+        - Zin die het vierde subonderwerp omschrijft.
+        
+        ...
+        
+        n. Zin die het hoofdonderwerp omschrijft.
+        - Zin die het eerste subonderwerp omschrijft.
+        - Zin die het tweedesubonderwerp omschrijft.
+        - Zin die het derde subonderwerp omschrijft.
+        - Zin die het vierde subonderwerp omschrijft.
+        
+        
+        """
+        
+        template_string4 = """
+        Voor elk van de {num_topics} onderwerpen, geef eerst een korte beschrijving, dan een korte beschrijvende zin, en dan vier aanvullende details die de subthema's verduidelijken. Gebruik het onderstaande format: 
 
+        ### Onderwerp 1
+        
+        Hoofdthema: [Eenvoudige beschrijving van het hoofdonderwerp]  
+        [Zin die het hoofdonderwerp omschrijft]
+        1. [Frase die het eerste subthema omschrijft]
+        2. [Frase die het tweede subthema omschrijft] 
+        3. [Frase die het derde subthema omschrijft] 
+        4. [Frase die het vierde subthema omschrijft] 
+        
+        ### Onderwerp 2
+        
+        Hoofdthema: [Eenvoudige beschrijving van het hoofdonderwerp]  
+        [Zin die het hoofdonderwerp omschrijft]
+        1. [Frase die het eerste subthema omschrijft]
+        2. [Frase die het tweede subthema omschrijft] 
+        3. [Frase die het derde subthema omschrijft] 
+        4. [Frase die het vierde subthema omschrijft] 
+        
+        ...
+`
+        ### Onderwerp n
+        
+        Hoofdthema: [Eenvoudige beschrijving van het hoofdonderwerp]  
+        [Zin die het hoofdonderwerp omschrijft]
+        1. [Frase die het eerste subthema omschrijft]
+        2. [Frase die het tweede subthema omschrijft] 
+        3. [Frase die het derde subthema omschrijft] 
+        4. [Frase die het vierde subthema omschrijft] 
+        
+        Lists: '''{string_lda}''' """
+
+        template_string5 = """
+        Haal {num_topics} uit de tekst. 
+        Voor elk van de {num_topics} onderwerpen, geef eerst een korte beschrijving, dan een korte beschrijvende zin, en dan vier aanvullende details die de subthema's verduidelijken. Gebruik het onderstaande format: 
+        Gebruik het onderstaande sjabloon. 
+        
+        ### Onderwerp 1
+        
+        Hoofdthema: [Eenvoudige beschrijving van het hoofdonderwerp]  
+        [Zin die het hoofdonderwerp omschrijft]
+        1. [Frase die het eerste subthema omschrijft]
+        2. [Frase die het tweede subthema omschrijft] 
+        3. [Frase die het derde subthema omschrijft] 
+        4. [Frase die het vierde subthema omschrijft] 
+        
+        ### Onderwerp 2
+        
+        Hoofdthema: [Eenvoudige beschrijving van het hoofdonderwerp]  
+        [Zin die het hoofdonderwerp omschrijft]
+        1. [Frase die het eerste subthema omschrijft]
+        2. [Frase die het tweede subthema omschrijft] 
+        3. [Frase die het derde subthema omschrijft] 
+        4. [Frase die het vierde subthema omschrijft] 
+        
+        ...
+`
+        ### Onderwerp n
+        
+        Hoofdthema: [Eenvoudige beschrijving van het hoofdonderwerp]  
+        [Zin die het hoofdonderwerp omschrijft]
+        1. [Frase die het eerste subthema omschrijft]
+        2. [Frase die het tweede subthema omschrijft] 
+        3. [Frase die het derde subthema omschrijft] 
+        4. [Frase die het vierde subthema omschrijft] 
+        
+        """
+        
         # LLM call
-        prompt_template = ChatPromptTemplate.from_template(template_string)
+        prompt_template = ChatPromptTemplate.from_template(template_string4)
         chain = LLMChain(llm=llm, prompt=prompt_template) 
+        for key, value in dictionary.items(): 
+            string_text = " ".join(value)    
         response = chain.run({
             "string_lda" : string_lda,
+            # "string_text" : string_text, 
             "num_topics" : number_topics 
             })
 
