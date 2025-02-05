@@ -362,7 +362,7 @@ with tab9:
     st.write("Druk hieronder op de knop om het model te laten lopen.")
     
     if st.button("Train BERTopic model"): 
-        st.write("Het BERTopic model is op dit moment bezig.") 
+        st.write("Het BERTopic model is op dit moment aan het trainen.") 
         
         result = subprocess.run(["python", "src/BERTopic.py"], shell=True, capture_output=True, text=True) 
         
@@ -387,6 +387,3 @@ with tab9:
                                 file_name="bertopic_results.txt", 
                                 mime="text/plain") 
                     
-
-        
-      

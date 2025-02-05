@@ -17,6 +17,8 @@ eta = parameters["eta"]
 def change_alpha(alpha_raw): 
     if "," in alpha_raw: 
         alpha = [float(x.strip()) for x in alpha_raw.split(",")]
+    if alpha_raw == "": 
+        alpha = None 
     else:
         alpha = float(alpha_raw)
     return alpha 
@@ -76,7 +78,9 @@ class LDA:
         Returns:
         None
         """  
-        mdl = tp.LDAModel(tw=tp.TermWeight.ONE, min_cf=min_cf, min_df=min_df, rm_top=top_words, k=number_topics, alpha=alpha, eta=eta, corpus=corpus) 
+        mdl = tp.LDAModel(tw=tp.TermWeight.ONE, min_cf=min_cf, min_df=min_df, rm_top=top_words, k=number_topics, # alpha=alpha, 
+                          # eta=eta, 
+                          corpus=corpus) 
         
         for pdf, words in input_dict.items():
             mdl.add_doc(words)   

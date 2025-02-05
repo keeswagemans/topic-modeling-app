@@ -67,13 +67,14 @@ class LDALLM():
         
         return corpus 
     
-    def LDA(input_dict, corpus, min_cf, min_df, top_words, number_topics, eta): 
+    def LDA(input_dict, corpus, min_cf, min_df, top_words, number_topics): # , eta) 
         
         """
         This function trains an LDA model on the data and saves the model to the specified path. 
         
         """
-        mdl = tp.LDAModel(tw=tp.TermWeight.ONE, min_cf=min_cf, min_df=min_df, rm_top=top_words, k=number_topics, eta=eta, corpus=corpus) 
+        mdl = tp.LDAModel(tw=tp.TermWeight.ONE, min_cf=min_cf, min_df=min_df, rm_top=top_words, k=number_topics, # eta=eta, 
+                          corpus=corpus) 
         
         for pdf, words in input_dict.items():
             mdl.add_doc(words)   
@@ -91,9 +92,10 @@ class LDALLM():
         
         return topics_ls 
     
-    def topics_llm(llm, input_dict, min_cf, min_df, rm_top=top_words, k=number_topics, eta=eta, corpus=corpus): 
+    def topics_llm(llm, input_dict, min_cf, min_df, rm_top=top_words, k=number_topics, # eta=eta, 
+                   corpus=corpus): 
         
-        list_of_topicwords = LDALLM.LDA(input_dict, corpus, min_cf, min_df, top_words, number_topics, eta)
+        list_of_topicwords = LDALLM.LDA(input_dict, corpus, min_cf, min_df, top_words, number_topics) # , eta)
         
         string_lda = ""
         for list in list_of_topicwords: 
@@ -255,7 +257,6 @@ class LDALLM():
             string_text = " ".join(value)    
         response = chain.run({
             "string_lda" : string_lda,
-            # "string_text" : string_text, 
             "num_topics" : number_topics 
             })
 
@@ -282,5 +283,6 @@ data = dictionary.values()
 final_data = [item for sublist in data for item in sublist]
 corpus = LDALLM.corpus(dictionary) 
 corpus.save("models/corpus_llm.cps") 
-response = LDALLM.topics_llm(llm, dictionary, min_cf, min_df, top_words, number_topics, eta, corpus)
+response = LDALLM.topics_llm(llm, dictionary, min_cf, min_df, top_words, number_topics, # eta, 
+                             corpus)
 print(response) 
