@@ -1,7 +1,5 @@
 # Import libraries 
 import streamlit as st
-import pandas as pd 
-from PIL import Image 
 import subprocess 
 import os 
 from pathlib import Path 
@@ -9,44 +7,53 @@ import tempfile
 import json 
 import glob 
 
+with open("styles.css") as f:   
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True) 
 
 LOCAL_REPO_PATH = os.path.join(os.getcwd(), "documenten")
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 =  st.tabs(['Over project', 
-                                                        'Documenten', 
-                                                        'Preprocessing', 
-                                                        'Over LDA', 
-                                                        'LDA', 
-                                                        'Over LLM LDA', 
-                                                        'LLM LDA',
-                                                        'Over BERTopic', 
-                                                        'BERTopic'])
-
-custom_css = """
-<style>
-    .custom-box {
-        background-color: #154273; 
-        color: #FFFFFF;
-        padding: 10px; 
-        border-radius: 5px; 
-        text-align: center; 
+# Center an image using HTML and CSS
+st.markdown(
+    """
+    <style>
+    .center {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
     }
-</style> 
-""" 
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+st.markdown('<img src="media/2560px-Logo_Ministerie_SZW.svg.png" class="center" width="200">', unsafe_allow_html=True)
+
+tab1, tab2, tab3, tab4, tab5, tab6 =  st.tabs(['Over project', 
+                                         'Documenten', 
+                                         'Preprocessing',  
+                                         'LDA',
+                                         'LLM LDA',
+                                         'BERTopic'])
                                             
 with tab1: 
-    st.markdown(custom_css, unsafe_allow_html=True)
-    st.title("Topic Modeling voor het ministerie van Sociale Zaken en Werkgelegenheid")
+    custom = f"<p style='font-size:65px; font-weight:bold'>DeepCivic</p>" 
+    st.markdown(custom, unsafe_allow_html=True)
     st.image("media/Gemini_Generated_Image_z5i16oz5i16oz5i1.jpg")
-    text = "De modellen in deze webapp kunnen gebruikt worden om topics te modelleren uit tekstcorpora. Voordat de modellen getraind kunnen worden, dienen documenten geüpload te worden. Dit kan gedaan worden in de Documenten Manager. Na het toevoegen van de documenten kunnen de teksten geëxtraheerd worden onder hetzelfde kopje. Daarna kunnen de teksten gepreprocessed worden. In datzelfde tabblad kunnen woorden gekozen worden, die uit de tekstcorpus verwijdert dienen te worden. In Over LDA en Over BERTopic worden de modellen kort toegelicht. In de tabbladen LDA en BERTopic kunnen de parameters voor de modellen gekozen worden en kan het model getraind worden. De resultaten en visualisaties van de modellen zijn te downloaden in de respectievelijke tab."
+    
+    text = """
+        DeepCivic kan gebruikt worden om topics (thema’s) te genereren uit tekstcorpora. Het bestaat uit drie modellen: LDA, BERTopic en LDA met een LLM. /n/n 
+        Voordat de modellen getraind kunnen worden, dienen documenten geüpload te worden. Dit kan gedaan worden in de Documenten Manager. Na het toevoegen van de documenten kunt u te teksten extraheren door op de knop te drukken onder hetzelfde kopje. Onder het kopje preprocessen, kunt u de tekst preprocessen (tekst gereed maken voor de analyse) en kunt u woorden verwijderen die u niet in de analyse wenst te hebben. /n/n
+        In de tabbladen LDA, LLM LDA en BERTopic kunnen de parameters voor de modellen gekozen worden en kunnen de modellen getraind worden. Daar vind je ook informatie over de modellen. De resultaten en visualisaties van de modellen zijn te downloaden in de respectievelijke tab.
+    """   
+      
     paragraphs = text.split("/n/n")
     for i, paragraph in enumerate(paragraphs, 1):
         st.write(paragraph)
-
+    
       
 with tab2: 
-    st.markdown(custom_css, unsafe_allow_html=True) 
-    st.title("Documenten Manager") 
+    custom_tab2 =     custom = f"<p style='font-size:65px; font-weight:bold'>Documenten Manager</p>" 
+    st.markdown(custom_tab2, unsafe_allow_html=True)     
         
     os.makedirs(LOCAL_REPO_PATH, exist_ok=True)  # Ensure the directory exists
 
@@ -104,7 +111,8 @@ with tab2:
             
 
 with tab3:
-    st.title("Preprocessing")
+    custom_tab3 = f"<p style='font-size:65px; font-weight:bold'>Preprocessing</p>"  
+    st.markdown(custom_tab3, unsafe_allow_html=True)     
     st.write("Links kun je woorden intikken om te verwijderen, druk op enter en klik vervolgens op de knop 'Verwijder woorden' rechts. Wil je geen woorden verwijderen, druk dan gelijk op de knop 'Preprocessing'. Eerst preprocessen voodat je woorden verwijdert, is raadzaam.")
     col1, col2 = st.columns(2)
 
@@ -148,17 +156,30 @@ with tab3:
     
             
 with tab4: 
-    st.title("Over LDA") 
-    st.write("Hieronder komt een schematische weergave van wat een Latent Dirichlet Allocation-model is.") 
+    custom_tab4 = f"<p style='font-size:65px; font-weight:bold'>LDA</p>"    
+    st.markdown(custom_tab4, unsafe_allow_html=True) 
+    text_lda = """
+    Latent Dirichlet Allocation (LDA) is een krachtige techniek die wordt gebruikt om verborgen thema's in een verzameling documenten te ontdekken. Het uitgangspunt van LDA is dat elk document een mix is van verschillende onderwerpen en dat elk onderwerp een mix is van woorden. Stel je voor dat je een verzameling artikelen hebt over verschillende onderwerpen zoals sport, politiek en technologie. LDA probeert te achterhalen welke onderwerpen in elk artikel voorkomen en welke woorden bij elk onderwerp horen. /n/n
 
-with tab5: 
-    st.title("Latent Dirichlet Allocation") 
-    st.write("Kies hieronder de parameters voor het trainen van het Latent Dirichlet Allocation-model. Voor een uitvoerige beschrijving van het Latent Dirichlet Allocation-model, bekijk het tabblad 'Over LDA'. De parameters  die voor het LDA-model gebruikt worden zijn:") 
+    Het proces begint met het willekeurig toewijzen van woorden aan onderwerpen. Vervolgens wordt dit proces herhaaldelijk aangepast om de waarschijnlijkheid te maximaliseren dat de woorden bij de juiste onderwerpen horen. Uiteindelijk resulteert dit in een set onderwerpen met bijbehorende woorden en een verdeling van onderwerpen over de documenten. Dit maakt het mogelijk om patronen en trends in grote hoeveelheden tekst te ontdekken, wat bijzonder nuttig is in gebieden zoals tekstmining en data-analyse. /n/n
+
+    LDA wordt veel toegepast in verschillende domeinen, zoals het analyseren van nieuwsartikelen, wetenschappelijke papers en sociale media. Door de verborgen thema's in teksten te identificeren, kunnen onderzoekers en analisten waardevolle inzichten verkrijgen en beter begrijpen welke onderwerpen in een bepaalde verzameling documenten domineren. /n/n 
+    
+    Voor meer informatie kun je de volgende studie bekijken: /n/n 
+    
+    Blei, D. M., Ng, A. Y., & Jordan, M. I. (2003). Latent Dirichlet Allocation. In jmlr.org. Journal of Machine Learning. https://proceedings.neurips.cc/paper/2001/file/296472c9542ad4d4788d543508116cbc-Paper.pdf
+    
+    """ 
+    paragraphs_lda = text_lda.split("/n/n")
+    for i, paragraph in enumerate(paragraphs_lda, 1):
+        st.write(paragraph)  
+
+    st.write("Kies hieronder de parameters voor het trainen van het Latent Dirichlet Allocation-model. De parameters  die voor het LDA-model gebruikt worden zijn:") 
     st.markdown("- Minimale collectiefrequentie van woorden: Het minimale aantal keren dat een woord in de gehele corpus moet voorkomen om opgenomen te worden in de analyse. Woorden die minder vaak voorkomen, worden verwijderd. Laat dit veld leeg om de standaardwaarde 0 te gebruiken. De bovengrens is 10000.")
     st.markdown("- Minimale documentfrequentie van woorden: Het minimale aantal documenten waarin een woord moet voorkomen. Woorden die minder vaak voorkomen dan de gespecifideerde waarde, worden uitgesloten. Laat dit veld leeg om de standaardwaarde 0 te gebruiken. De bovengrens is 10000. Alle woorden die aan deze grens voldoen, worden in deze analyse meegenomen.")
     st.markdown("- Aantal te verwijderen 'top'-woorden: Het aantal meest voorkomende woorden in de corpus dat verwijderd wordt. Laat dit veld leeg om de standaardwaarde 0 te gebruiken. Alle woorden die voldoen aan deze drempel worden meegenomen in de analyse.")
     st.markdown("- K (aantal topics): Het aantal topics dat door het model gegenereerd moet worden. Kies een waarde tussen 1 ~ 32676.")
-    st.markdown("- Alpha is de hyperparameter van de Dirichlet-verdeling voor de documenten-topicverdeling. Kies voor een symmetric prior of een asymmetric prior. Kijk in 'Over LDA' voor meer informatie.")
+    st.markdown("- Alpha is de hyperparameter van de Dirichlet-verdeling voor de documenten-topicverdeling. Kies voor een symmetric prior of een asymmetric prior. Symmetric betekent voor alle topics dezelfde prior. Asymmetric betekent dat sommige topics prominenter zijn dan andere, afhankelijk van de specifiek afgestemde alpha.")    
     st.markdown("- Eta is de hyperparameter van de Dirichlet-verdeling voor de topic-woordverdeling. Een assymetrische eta zorgt ervoor dat sommige woorden prominenter in de topics voorkomen. Keuze tussen 0 en 1.")
     
     st.markdown('''
@@ -257,12 +278,11 @@ with tab5:
                                     file_name="ldavis.html",
                                     mime="text/html")
                                  
-with tab6: 
-    st.title("Over LLM LDA") 
+with tab5: 
+    custom_tab6 = f"<p style='font-size:65px; font-weight:bold'>LLM LDA</p>" 
+    st.markdown(custom_tab6, unsafe_allow_html=True)     
     st.write("Op de volgende pagina kan een LDA met een Large Language Model getraind worden. De resultaten van het model kunnen eveneens gedownload worden. Een Large Language Model draait via de Azure Cloud, dat betekent dat alleen openbare documenten in dit model kunnen worden getraind. Hier documenten ingooien die niet-openbaar zijn, leidt tot een datalek. De parameters zijn hetzelfde en die kun je op de volgende pagina ook aanpassen. Succes!") 
-
-with tab7: 
-    st.title("LLM LDA")
+    
     st.write("LET OP: Dit model draait via de Azure Cloud. Alleen openbare documenten in dit model trainen.") 
     
     col1, col2 = st.columns(2) 
@@ -348,17 +368,32 @@ with tab7:
                                     file_name="ldavis_llm.html",
                                     mime="text/html")
         
-with tab8:
-    st.title("Over BERTopic")
-    st.write("Hieronder een korte uitleg over het model BERTopic.") 
+with tab6:
+    custom_tab8 = f"<p style='font-size:65px; font-weight:bold'>BERTopic</p>"  
+    st.markdown(custom_tab8, unsafe_allow_html=True)     
+    text_bertopic = """
+    BERTopic is een geavanceerde techniek voor topic modeling die gebruik maakt van moderne taalmodellen zoals BERT (Bidirectional Encoder Representations from Transformers) en c-TF-IDF (class-based Term Frequency-Inverse Document Frequency) om betekenisvolle clusters en onderwerpen te creëren. Het doel van BERTopic is om gemakkelijk interpreteerbare onderwerpen te genereren terwijl belangrijke woorden in de beschrijvingen van de onderwerpen behouden blijven. /n/n
 
-with tab9:
+    Het proces begint met het gebruik van BERT om tekstuele gegevens om te zetten in hoge-dimensionale vectoren die de semantische betekenis van de woorden vastleggen. Deze vectoren worden vervolgens geclusterd om groepen van gerelateerde documenten te vormen. Door c-TF-IDF toe te passen, kan BERTopic de belangrijkste woorden binnen elk cluster identificeren, wat helpt bij het beschrijven van de onderwerpen op een begrijpelijke manier. /n/n
+
+    Een van de sterke punten van BERTopic is de flexibiliteit en de mogelijkheid om verschillende technieken te ondersteunen, zoals zero-shot topic modeling, waarbij nieuwe onderwerpen kunnen worden geïdentificeerd zonder voorafgaande training, en het gebruik van seed words om specifieke onderwerpen te sturen. Dit maakt BERTopic bijzonder nuttig voor het analyseren van grote hoeveelheden tekst en het ontdekken van verborgen patronen en trends. /n/n
+
+    In de praktijk wordt BERTopic veel gebruikt in verschillende domeinen, zoals het analyseren van klantfeedback, het monitoren van sociale media en het verkennen van wetenschappelijke literatuur. Door de kracht van moderne taalmodellen te benutten, biedt BERTopic een robuuste en efficiënte manier om inzicht te krijgen in de inhoud van grote tekstcorpora. /n/n 
+
+    Kijk naar de onderstaande studie voor meer informatie: /n/n 
+
+    Grootendorst, M. (2022). BERTopic: Neural topic modeling with a class-based TF-IDF procedure. arXiv (Cornell University). https://doi.org/10.48550/arxiv.2203.05794
+    
+    """
+    paragraphs_bertopic = text_bertopic.split("/n/n")
+    for i, paragraph in enumerate(paragraphs_bertopic, 1):
+        st.write(paragraph)
+    
     if "results_file_path_bertopic" not in st.session_state:    
         st.session_state.results_file_path_bertopic = None 
     if "results_ready_bertopic" not in st.session_state:     
         st.session_state.results_ready_bertopic = False  
     
-    st.title("BERTopic")
     st.write("Druk hieronder op de knop om het model te laten lopen.")
     
     if st.button("Train BERTopic model"): 
@@ -386,4 +421,6 @@ with tab9:
                                 data=file, 
                                 file_name="bertopic_results.txt", 
                                 mime="text/plain") 
-                    
+            
+            
+   
