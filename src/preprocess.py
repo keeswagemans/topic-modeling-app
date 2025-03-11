@@ -8,13 +8,13 @@ import json
 
 class Preprocess:
     
-    def __init__(self, text_dict, language, custom_filterwords_path, custom_filterwords_list): 
+    def __init__(self, text_dict, languages, custom_filterwords_path, custom_filterwords_list): 
         self.text_dict = text_dict 
-        self.language = language 
+        self.languages = languages 
         self.custom_filterwords_path = custom_filterwords_path
         self.custom_filterwords_list = custom_filterwords_list 
 
-    def preprocessing(text_dict, language, custom_filterwords_path=None, custom_filterwords_list=None):
+    def preprocessing(text_dict, languages, custom_filterwords_path=None, custom_filterwords_list=None):
         """
         Preprocesses text data by performing several steps including cleaning, removing stopwords, 
         removing filter words, and lemmatization.
@@ -52,6 +52,10 @@ class Preprocess:
 
         # Step 2: Remove stopwords
         nltk.download('stopwords')
+        stop_words = set()
+        for language in languages: 
+            stop = set(stopwords.words(language)) 
+        stop_words.update(stop) 
         stop_words = stopwords.words(language)
 
         for key, value in dictionary.items():
@@ -96,5 +100,6 @@ class Preprocess:
 
 # Running the code 
 input_data = json.load(open("extractedtext/extractedtext.json"))
-data_preprocessed = Preprocess.preprocessing(input_data, language='dutch', custom_filterwords_path='molex/molex_22_02_2022.tsv', custom_filterwords_list=None)
+data_preprocessed = Preprocess.preprocessing(input_data, languages=['dutch', 'english'], custom_filterwords_path='molex/molex_22_02_2022.tsv', custom_filterwords_list=None)
 json.dump(data_preprocessed, open("preprocessing/preprocessing.json", "w"))
+

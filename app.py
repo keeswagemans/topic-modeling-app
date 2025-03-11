@@ -26,7 +26,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.markdown('<img src="media/2560px-Logo_Ministerie_SZW.svg.png" class="center" width="200">', unsafe_allow_html=True)
 
 tab1, tab2, tab3, tab4, tab5, tab6 =  st.tabs(['Over project', 
                                          'Documenten', 
@@ -36,13 +35,13 @@ tab1, tab2, tab3, tab4, tab5, tab6 =  st.tabs(['Over project',
                                          'BERTopic'])
                                             
 with tab1: 
-    custom = f"<p style='font-size:65px; font-weight:bold'>DeepCivic</p>" 
+    custom = f"<p style='font-size:65px; font-weight:bold'; align:center>DeepCivic</p>" 
     st.markdown(custom, unsafe_allow_html=True)
     st.image("media/Gemini_Generated_Image_z5i16oz5i16oz5i1.jpg")
     
     text = """
         DeepCivic kan gebruikt worden om topics (thema’s) te genereren uit tekstcorpora. Het bestaat uit drie modellen: LDA, BERTopic en LDA met een LLM. /n/n 
-        Voordat de modellen getraind kunnen worden, dienen documenten geüpload te worden. Dit kan gedaan worden in de Documenten Manager. Na het toevoegen van de documenten kunt u te teksten extraheren door op de knop te drukken onder hetzelfde kopje. Onder het kopje preprocessen, kunt u de tekst preprocessen (tekst gereed maken voor de analyse) en kunt u woorden verwijderen die u niet in de analyse wenst te hebben. /n/n
+        Voordat de modellen getraind kunnen worden, dienen documenten geüpload te worden. Dit kan gedaan worden in de Documenten Manager. Na het toevoegen van de documenten kunt u de teksten extraheren door op de knop te drukken onder hetzelfde kopje. Onder het kopje preprocessen, kunt u de tekst preprocessen (tekst gereed maken voor de analyse) en kunt u woorden verwijderen die u niet in de analyse wenst te hebben. /n/n
         In de tabbladen LDA, LLM LDA en BERTopic kunnen de parameters voor de modellen gekozen worden en kunnen de modellen getraind worden. Daar vind je ook informatie over de modellen. De resultaten en visualisaties van de modellen zijn te downloaden in de respectievelijke tab.
     """   
       
@@ -215,9 +214,9 @@ with tab4:
             min_cf_input = st.number_input(label="Minimale collectie frequentie van woorden:", min_value=0, max_value=10000, key="min_cf")
             min_df_input = st.number_input(label="Minimale documentfrequentie van woorden:", min_value=0, max_value=10000, key="min_df")  
             top_words_input = st.number_input(label="Aantal te verwijderen 'top-woorden:", min_value=0, max_value=10000, key="top_words") 
-            number_topics_input = st.number_input(label="K (het aantal topics)", min_value=1, max_value=20, key="number_topics")
+            number_topics_input = st.number_input(label="K (het aantal topics)", min_value=1, max_value=20, key="number_topics") 
             alpha_input = st.text_input("Enter symmetric alpha or asymmetric alpha:")
-            eta_input = st.slider("Eta:", min_value=0.0, max_value=1.0, step=0.1, key="eta") 
+            eta_input = st.number_input("Eta:", min_value=0.01, max_value=1.0, step=0.01, key="eta")  
             submit_button = st.form_submit_button(label="Leg parameters vast", on_click=form_callback)
             if submit_button:
                 st.write("Parameters vastgelegd!") 
@@ -309,7 +308,7 @@ with tab5:
             top_words_input2 = st.number_input(label="Aantal te verwijderen 'top-woorden:", min_value=0, max_value=10000, key="top_words2") 
             number_topics_input2 = st.number_input(label="K (het aantal topics)", min_value=1, max_value=20, key="number_topics2")
             alpha_input2 = st.text_input("Enter symmetric alpha or asymmetric alpha:")
-            eta_input2 = st.slider("Eta:", min_value=0.1, max_value=1.0, step=0.1, key="eta2") 
+            eta_input2 = st.number_input(label="Eta:", min_value=0.01, max_value=1.0, step=0.01, key="eta2")
             submit_button2 = st.form_submit_button(label="Leg parameters vast", on_click=form_callback2)
             if submit_button2:
                 st.write("Parameters vastgelegd!") 
@@ -422,5 +421,11 @@ with tab6:
                                 file_name="bertopic_results.txt", 
                                 mime="text/plain") 
             
+st.write("______________________________________________________________")
+
+col1, col2, col3 = st.columns(3) 
+
+with col2: 
+    st.image("media/2560px-Logo_Ministerie_SZW.svg.png", width=300) 
             
    

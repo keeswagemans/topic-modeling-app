@@ -13,29 +13,39 @@ top_words = parameters["top_words"]
 number_topics = parameters["number_topics"]
 alpha_raw = parameters["alpha_input"]
 eta = parameters["eta"]
-
-def change_alpha(alpha_raw): 
-    if "," in alpha_raw: 
-        alpha = [float(x.strip()) for x in alpha_raw.split(",")]
-    if alpha_raw == "": 
-        alpha = None 
-    else:
-        alpha = float(alpha_raw)
-    return alpha 
-
-alpha = change_alpha(alpha_raw)
-
 class LDA: 
     
-    def __init__(self, data, min_cf, min_df, top_words, number_topics, alpha, eta):
+    def __init__(self, data, min_cf, min_df, top_words, number_topics, alpha_raw, eta):
         self.data = data  
         self.min_cf = min_cf 
         self.min_df = min_df
         self.top_words = top_words 
         self.number_topics = number_topics
-        self.alpha = alpha 
+        self.alpha_raw = alpha_raw 
         self.eta = eta 
         
+    def change_alpha(alpha_raw):
+        if alpha_raw == "":
+            alpha = float(0.1) 
+        elif alpha_raw == "0.0": 
+            alpha = float(0.1) 
+        elif alpha_raw == ",": 
+            alpha = [float(x.strip()) for x in alpha_raw.split(",")]
+        else:
+            alpha = float(alpha_raw)
+        return alpha 
+    
+    # def change_eta(eta_raw):    
+    #     if eta_raw == "": 
+    #         eta = float(0.1)
+    #     elif eta_raw == float(0.0): 
+    #         eta = float(0.1)     
+    #     elif eta_raw == ",": 
+    #         eta = [float(x.strip()) for x in eta.split(",")]     
+    #     else: 
+    #         eta = float(eta_raw)     
+    #     return eta 
+
     def corpus(data): 
         """
         Creates a corpus object from the provided data.
@@ -47,7 +57,7 @@ class LDA:
         data (str): The input data to be tokenized and added to the corpus.
 
         Returns:
-        tp.utils.Corpus: A corpus object containing the tokenized data.
+        tp.utils.Corpus: A corpus object containing the tokenized data. 
         """
         corpus = tp.utils.Corpus(tokenizer=tp.utils.SimpleTokenizer())
         corpus.process(data)
@@ -78,8 +88,13 @@ class LDA:
         Returns:
         None
         """  
-        mdl = tp.LDAModel(tw=tp.TermWeight.ONE, min_cf=min_cf, min_df=min_df, rm_top=top_words, k=number_topics, # alpha=alpha, 
-                          # eta=eta, 
+        mdl = tp.LDAModel(tw=tp.TermWeight.ONE, 
+                          min_cf=min_cf, 
+                          min_df=min_df, 
+                          rm_top=top_words, 
+                          k=number_topics, 
+                          alpha=alpha, 
+                          eta=eta, 
                           corpus=corpus) 
         
         for pdf, words in input_dict.items():
@@ -92,7 +107,7 @@ class LDA:
         print("Training...", file=sys.stderr, flush=True)
         mdl.train(10000, show_progress=True)
         mdl.summary()
-        print("Saving...", file=sys.stderr, flush=True) 
+        print("Saving...", file=sys.stderr, flush=True)
         mdl.save(save_path, True)
 
         for k in range(mdl.k):
@@ -113,7 +128,17 @@ class LDA:
 dictionary = json.load(open("preprocessing/preprocessing.json"))
 data = dictionary.values()
 final_data = [item for sublist in data for item in sublist]
+alpha = LDA.change_alpha(alpha_raw) 
+# eta = LDA.change_eta(eta_raw) 
 corpus = LDA.corpus(final_data)   
 corpus.save("models/corpus.cps") 
-LDA.lda(dictionary, corpus, "models/lda_model.bin", min_cf, min_df, top_words, number_topics, alpha, eta)
+LDA.lda(dictionary, 
+        corpus, 
+        "models/lda_model.bin", 
+        min_cf, 
+        min_df, 
+        top_words, 
+        number_topics,  
+        alpha,
+        eta)
 print(number_topics)
