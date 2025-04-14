@@ -1,8 +1,0 @@
-@font-face {
-    font-family: 'RijksoverheidserifText';
-    src: url('media/rijksoverheidserif-regular.ttf') format('truetype');
-}
-
-body {
-    font-family: 'RijksoverheidserifText', serif;
-}
